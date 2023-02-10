@@ -1,0 +1,17 @@
+syntax = 'proto3';
+
+option go_package = "proto/protobuf";
+
+
+message ProxyRespData {
+    
+    bytes payload = 1;
+    bool compress = 2;
+    bool encryptEnable = 3;
+    string encryptKeyName = 4;
+
+    //bytes headerPayload = 5;
+    
+}
+
+//protoc --go_out=. ./proto/*.proto

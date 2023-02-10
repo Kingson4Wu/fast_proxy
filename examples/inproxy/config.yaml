@@ -1,0 +1,26 @@
+proxy:
+  forwardAddress: http://127.0.0.1:9833/inProxy
+
+application:
+  name : song_service
+  port : 8033
+  contextPath : /inProxy
+
+rpc:
+  serviceHeaderName: C_ServiceName
+
+serviceConfig:
+  token_service:
+    encryptKeyName: encrypt.key.room.v2
+    signKeyName: sign.key.room.v1
+    encryptEnable: true
+    signEnable: true
+    compressEnable: true
+
+signKeyConfig:
+  sign.key.room.v1: abcd
+  sign.key.room.v2: abcd
+
+encryptKeyConfig:
+  encrypt.key.room.v1: ABCDABCDABCDABCDW
+  encrypt.key.room.v2: ABCDABCDABCDABCD

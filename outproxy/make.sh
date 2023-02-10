@@ -1,0 +1,1 @@
+go build -o ./bin/program ./cmd/cmd.go
