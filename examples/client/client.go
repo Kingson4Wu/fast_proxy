@@ -11,15 +11,20 @@ import (
 
 func main() {
 
-	addr := center.GetAddress("token_service")
-
-	if addr == "" {
-		panic("service address not exist")
+	req, err := http.NewRequest("POST", getAddress(), strings.NewReader(fmt.Sprintf("param=%s", "hello")))
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("C_ServiceName", "song_service")
 
-	resp, err := http.Post(fmt.Sprintf("http://%s/api/service", addr),
-		"application/x-www-form-urlencoded",
-		strings.NewReader(fmt.Sprintf("param=%s", "hello")))
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	/*resp, err := http.Post(getAddress(),
+	"application/x-www-form-urlencoded",
+	strings.NewReader(fmt.Sprintf("param=%s", "hello")))*/
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -33,4 +38,24 @@ func main() {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 
 	log.Println(string(bodyBytes))
+}
+
+func getAddress() string {
+
+	proxyEnable := true
+
+	if proxyEnable {
+		addr := center.GetAddress("out_proxy")
+		if addr == "" {
+			panic("service address not exist")
+		}
+		return fmt.Sprintf("http://%s/token_service/api/service", addr)
+	}
+
+	addr := center.GetAddress("token_service")
+
+	if addr == "" {
+		panic("service address not exist")
+	}
+	return fmt.Sprintf("http://%s/api/service", addr)
 }

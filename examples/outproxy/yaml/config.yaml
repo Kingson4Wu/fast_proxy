@@ -1,5 +1,5 @@
 proxy:
-  forwardAddress: http://127.0.0.1:8989/inProxy
+  forwardAddress: http://127.0.0.1:8033/inProxy
 
 application:
   port : 8034
@@ -8,7 +8,7 @@ rpc:
   serviceHeaderName: C_ServiceName
 
 serviceConfig:
-  token_service:
+  song_service:
     encryptKeyName: encrypt.key.room.v2
     signKeyName: sign.key.room.v1
     encryptEnable: true

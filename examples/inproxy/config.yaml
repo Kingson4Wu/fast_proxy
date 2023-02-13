@@ -10,7 +10,7 @@ rpc:
   serviceHeaderName: C_ServiceName
 
 serviceConfig:
-  token_service:
+  song_service:
     encryptKeyName: encrypt.key.room.v2
     signKeyName: sign.key.room.v1
     encryptEnable: true
@@ -24,3 +24,9 @@ signKeyConfig:
 encryptKeyConfig:
   encrypt.key.room.v1: ABCDABCDABCDABCDW
   encrypt.key.room.v2: ABCDABCDABCDABCD
+
+serviceCallTypeConfig:
+  song_service:
+    /token_service/api/service:
+      callType: 1
+

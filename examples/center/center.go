@@ -2,11 +2,35 @@ package center
 
 import (
 	"fmt"
+	"github.com/Kingson4Wu/fast_proxy/common/network"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
+
+func RegisterAsync(name string, ip string, port int) chan bool {
+	/** register service to center async */
+	stop := make(chan bool)
+	go func(stop chan bool) {
+		for {
+			select {
+			case <-stop:
+				log.Println("stop register service")
+				return
+			default:
+				log.Println("try register service")
+				if network.Telnet(ip, port) {
+					Register(name, ip, port)
+					return
+				}
+				time.Sleep(3 * time.Second)
+			}
+		}
+	}(stop)
+	return stop
+}
 
 func Register(name string, ip string, port int) {
 	log.Printf("register %s to serivce center\n", name)

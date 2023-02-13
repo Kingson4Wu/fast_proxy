@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 	"github.com/Kingson4Wu/fast_proxy/inproxy"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
 )
 
 //go:embed *

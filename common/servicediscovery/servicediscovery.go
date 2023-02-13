@@ -3,32 +3,34 @@ package servicediscovery
 import "net/http"
 
 type ServiceQuery interface {
-	Get(name string) *address
+	Get(name string) *Address
 
-	ClientName(req *http.Request) string
+	//ClientName(req *http.Request) string
 }
 
-type address struct {
+type Address struct {
 	Ip   string
 	Port int
 }
 
-var sq ServiceQuery
+/** todo struct ，在各自proxy组合 */
+var Sq ServiceQuery
 
-func GetAddress(name string) *address {
-	if sq != nil {
-		return sq.Get(name)
+func GetAddress(name string) *Address {
+	if Sq != nil {
+		return Sq.Get(name)
 	}
 	return nil
 }
 
 func GetClientName(r *http.Request) string {
-	if sq != nil {
-		return sq.ClientName(r)
+	if Sq != nil {
+		//return Sq.ClientName(r)
+		return "song_service"
 	}
 	return ""
 }
 
 func Register(s ServiceQuery) {
-	sq = s
+	Sq = s
 }

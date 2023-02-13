@@ -46,6 +46,7 @@ func main() {
 	http.HandleFunc("/api/register", registerHandler)
 	http.HandleFunc("/api/address/get", getAddressHandler)
 
+	fmt.Println("center start ...")
 	if err := http.ListenAndServe(":"+strconv.Itoa(serverPort), nil); err != nil {
 		log.Fatal(err)
 	}

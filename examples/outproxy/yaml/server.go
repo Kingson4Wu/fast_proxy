@@ -2,6 +2,8 @@ package main
 
 import (
 	"embed"
+	"github.com/Kingson4Wu/fast_proxy/common/network"
+	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/outproxy"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
 )
@@ -16,6 +18,13 @@ func main() {
 		panic(err.Error())
 	}
 
-	outproxy.NewServer(config.LoadYamlConfig(configBytes))
+	intranetIp := network.GetIntranetIp()
+	c := config.LoadYamlConfig(configBytes)
+
+	//close(stop) todo
+	//stop := center.RegisterAsync("token_service", intranetIp, c.ServerPort())
+	center.RegisterAsync("out_proxy", intranetIp, c.ServerPort())
+
+	outproxy.NewServer(c)
 
 }

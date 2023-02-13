@@ -48,7 +48,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 	/** 鉴权  判断uri是否有权限等 */
 	//如何防止伪造服务名(签名验证通过即认为是)
-	clientServiceName := sc.GetClientName(r)
+	clientServiceName := servicediscovery.GetServiceName(r)
 	requestPath := servicediscovery.RealRequestUri(r.RequestURI)
 	if !config.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
 		w.WriteHeader(http.StatusBadRequest)

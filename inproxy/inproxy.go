@@ -2,9 +2,9 @@ package inproxy
 
 import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/logger"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/proxy"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
 	"net/http"
 	"time"
 )

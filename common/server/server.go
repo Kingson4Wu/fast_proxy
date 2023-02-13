@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -28,7 +29,32 @@ func WithShutdownTimeout(timeout time.Duration) Option {
 	}
 }
 
+// todo
+type cc struct {
+}
+
+func (cc) Get(name string) *servicediscovery.Address {
+	return &servicediscovery.Address{
+		Ip:   "127.0.0.1",
+		Port: 8101,
+	}
+}
+
+/*func (cc) ClientName(req *http.Request) string
+	return ""
+}*/
+
+func WithServiceDiscovery(f func(name string) *servicediscovery.Address) Option {
+
+	return func(p *Proxy) {
+		servicediscovery.Sq = cc{}
+	}
+}
+
 func NewServer(port int, logger *zap.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
+	servicediscovery.Sq = cc{}
+	//todo
+
 	http.HandleFunc("/", proxyHandler)
 	svr := http.Server{
 		Addr: ":" + strconv.Itoa(port),

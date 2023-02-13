@@ -69,7 +69,7 @@ func (c *yamlConfig) GetTimeoutConfigByName(name string, uri string) int {
 }
 
 func (c *yamlConfig) GetCallTypeConfigByName(name string, uri string) int {
-	return viper.GetInt(fmt.Sprintf("serviceCallTypeConfig.%s.%s", name, uri))
+	return viper.GetInt(fmt.Sprintf("serviceCallTypeConfig.%s.%s.callType", name, uri))
 }
 
 func (c *yamlConfig) ContainsCallPrivilege(name string, uri string) bool {

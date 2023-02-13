@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+func GetServiceName(req *http.Request) string {
+	return req.Header.Get(config.Get().ServiceRpcHeaderName())
+}
+
 func GetRequestDeadTime(req *http.Request) int {
 	timestamp := req.Header.Get("request_request_dead_time")
 	if timestamp == "" {

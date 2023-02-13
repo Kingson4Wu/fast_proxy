@@ -17,7 +17,7 @@ func LoadApolloConfig(appId string, namespace string, cluster string, address st
 
 	applicationConfig, applicationClient := initApollo(appId, namespace, cluster, address)
 
-	c2 := &CustomChangeListener{}
+	c2 := &customChangeListener{}
 	(*applicationClient).AddChangeListener(c2)
 
 	config = &apollo.ApolloConfig{
@@ -243,11 +243,10 @@ func ParseConfig[K string, V any](configJson string, p func(map[K]V), configName
 	return true
 }
 
-type CustomChangeListener struct {
-	//wg sync.WaitGroup
+type customChangeListener struct {
 }
 
-func (c *CustomChangeListener) OnChange(changeEvent *storage.ChangeEvent) {
+func (c *customChangeListener) OnChange(changeEvent *storage.ChangeEvent) {
 	//write your code here
 	//fmt.Println(changeEvent.Changes)
 	for key, value := range changeEvent.Changes {
@@ -273,6 +272,6 @@ func (c *CustomChangeListener) OnChange(changeEvent *storage.ChangeEvent) {
 	//c.wg.Done()
 }
 
-func (c *CustomChangeListener) OnNewestChange(event *storage.FullChangeEvent) {
+func (c *customChangeListener) OnNewestChange(event *storage.FullChangeEvent) {
 	//write your code here
 }

@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -20,24 +19,7 @@ func main() {
 
 	http.HandleFunc("/api/service", handler)
 
-	/** register service to center async */
-	stop := make(chan bool)
-	go func(stop chan bool) {
-		for {
-			select {
-			case <-stop:
-				log.Println("stop register service")
-				return
-			default:
-				log.Println("try register service")
-				if network.Telnet(intranetIp, serverPort) {
-					center.Register("token_service", intranetIp, serverPort)
-					return
-				}
-				time.Sleep(3 * time.Second)
-			}
-		}
-	}(stop)
+	stop := center.RegisterAsync("token_service", intranetIp, serverPort)
 
 	if err := http.ListenAndServe(":"+strconv.Itoa(serverPort), nil); err != nil {
 		close(stop)
