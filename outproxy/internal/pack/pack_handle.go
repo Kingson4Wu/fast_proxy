@@ -1,8 +1,6 @@
 package pack
 
-import (
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
-)
+import "github.com/Kingson4Wu/fast_proxy/common/config"
 
 type PackHandler interface {
 	Fmap(fn func([]byte, *config.ServiceConfig) ([]byte, error)) PackHandler

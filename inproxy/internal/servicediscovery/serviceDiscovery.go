@@ -1,16 +1,12 @@
 package servicediscovery
 
 import (
-	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
 	"net/http"
 	"strconv"
 	"strings"
 )
-
-func GetServiceName(req *http.Request) string {
-	return req.Header.Get(config.Get().ServiceRpcHeaderName())
-}
 
 func GetRequestDeadTime(req *http.Request) int {
 	timestamp := req.Header.Get("request_request_dead_time")
@@ -38,7 +34,7 @@ func Forward(r *http.Request) (string, func(*http.Request)) {
 	var callUrl string
 	var rHandler func(*http.Request)
 
-	addr := servicediscovery.GetAddress(serviceName)
+	addr := server.Center().Address(serviceName)
 	if addr == nil {
 		return "", nil
 	}

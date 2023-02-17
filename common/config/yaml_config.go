@@ -21,12 +21,12 @@ func LoadYamlConfig(configBytes []byte) Config {
 type yamlConfig struct {
 }
 
-func (c *yamlConfig) ForwardAddress() string {
-	return viper.GetString("proxy.forwardAddress")
-}
-
 func (c *yamlConfig) ServerPort() int {
 	return viper.GetInt("application.port")
+}
+
+func (c *yamlConfig) ServerName() string {
+	return viper.GetString("application.name")
 }
 
 func (c *yamlConfig) ServiceRpcHeaderName() string {
@@ -46,6 +46,10 @@ func (c *yamlConfig) GetServiceConfig(serviceName string) *ServiceConfig {
 
 func (c *yamlConfig) GetSignKey(serviceConfig *ServiceConfig) string {
 	return viper.GetString(fmt.Sprintf("signKeyConfig.%s", serviceConfig.SignKeyName))
+}
+
+func (c *yamlConfig) GetSignKeyByName(name string) string {
+	return viper.GetString(fmt.Sprintf("signKeyConfig.%s", name))
 }
 
 func (c *yamlConfig) GetEncryptKey(serviceConfig *ServiceConfig) string {

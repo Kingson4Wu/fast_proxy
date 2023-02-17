@@ -2,6 +2,8 @@ package main
 
 import (
 	"embed"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
+	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/inproxy"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
 )
@@ -16,6 +18,10 @@ func main() {
 		panic(err.Error())
 	}
 
-	inproxy.NewServer(config.LoadYamlConfig(configBytes))
+	c := config.LoadYamlConfig(configBytes)
+
+	sc := center.GetSC(func() string { return c.ServiceRpcHeaderName() })
+
+	inproxy.NewServer(c, server.WithServiceCenter(sc))
 
 }

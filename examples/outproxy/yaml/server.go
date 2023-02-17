@@ -2,10 +2,10 @@ package main
 
 import (
 	"embed"
-	"github.com/Kingson4Wu/fast_proxy/common/network"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/outproxy"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 )
 
 //go:embed *
@@ -18,13 +18,10 @@ func main() {
 		panic(err.Error())
 	}
 
-	intranetIp := network.GetIntranetIp()
-	c := config.LoadYamlConfig(configBytes)
+	c := outconfig.LoadYamlConfig(configBytes)
 
-	//close(stop) todo
-	//stop := center.RegisterAsync("token_service", intranetIp, c.ServerPort())
-	center.RegisterAsync("out_proxy", intranetIp, c.ServerPort())
+	sc := center.GetSC(func() string { return outconfig.Get().ServiceRpcHeaderName() })
 
-	outproxy.NewServer(c)
+	outproxy.NewServer(c, server.WithServiceCenter(sc))
 
 }

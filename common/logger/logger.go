@@ -10,6 +10,8 @@ import (
 
 var log *zap.Logger
 
+//TODO
+
 func init() {
 
 	var coreArr []zapcore.Core

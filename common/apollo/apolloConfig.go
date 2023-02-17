@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var c *ApolloConfig
+
 type ApolloConfig struct {
 	Log *zap.Logger
 	agollo.Client

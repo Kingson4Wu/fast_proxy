@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/apollo"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
+
 	"github.com/apolloconfig/agollo/v4"
 	"github.com/apolloconfig/agollo/v4/agcache"
 	"github.com/apolloconfig/agollo/v4/storage"
@@ -12,6 +13,10 @@ import (
 )
 
 var config *apollo.ApolloConfig
+
+func ApolloConfig() *apollo.ApolloConfig {
+	return config
+}
 
 func LoadApolloConfig(appId string, namespace string, cluster string, address string) Config {
 
@@ -52,12 +57,12 @@ func initApollo(appId string, namespace string, cluster string, address string) 
 type apolloConfig struct {
 }
 
-func (c *apolloConfig) ForwardAddress() string {
-	return getConfigString("proxy.forwardAddress")
-}
-
 func (c *apolloConfig) ServerPort() int {
 	return config.GetIntValue("application.port", 0)
+}
+
+func (c *apolloConfig) ServerName() string {
+	return config.GetString("application.name")
 }
 
 func (c *apolloConfig) ServiceRpcHeaderName() string {
@@ -76,6 +81,15 @@ func (c *apolloConfig) GetServiceConfig(serviceName string) *ServiceConfig {
 
 func (c *apolloConfig) GetSignKey(serviceConfig *ServiceConfig) string {
 	v, ok := signKeyMap[serviceConfig.SignKeyName]
+	if ok {
+		return v
+	}
+
+	return ""
+}
+
+func (c *apolloConfig) GetSignKeyByName(name string) string {
+	v, ok := signKeyMap[name]
 	if ok {
 		return v
 	}
@@ -141,7 +155,7 @@ const (
 
 func parseAllConfig() {
 	serviceConfigJson := getConfigString(serviceConfigName)
-	if !parseConfig(serviceConfigJson, setServiceConfig, serviceConfigName) {
+	if !ParseApolloConfig(serviceConfigJson, setServiceConfig, serviceConfigName) {
 
 		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", serviceConfigName))
 		panic(fmt.Sprintf("Unmarshal %s failure", serviceConfigName))
@@ -149,7 +163,7 @@ func parseAllConfig() {
 
 	encryptKeyConfigJson := getConfigString(encryptKeyConfigName)
 
-	if !parseConfig(encryptKeyConfigJson, setEncryptKey, encryptKeyConfigName) {
+	if !ParseApolloConfig(encryptKeyConfigJson, setEncryptKey, encryptKeyConfigName) {
 
 		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", encryptKeyConfigName))
 		panic(fmt.Sprintf("Unmarshal %s failure", encryptKeyConfigName))
@@ -157,7 +171,7 @@ func parseAllConfig() {
 
 	signKeyConfigJson := getConfigString(signKeyConfigName)
 
-	if !parseConfig(signKeyConfigJson, setSignKey, signKeyConfigName) {
+	if !ParseApolloConfig(signKeyConfigJson, setSignKey, signKeyConfigName) {
 
 		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", signKeyConfigName))
 		panic(fmt.Sprintf("Unmarshal %s failure", signKeyConfigName))
@@ -165,7 +179,7 @@ func parseAllConfig() {
 
 	serviceTimeoutConfig := getConfigString(serviceTimeoutConfigName)
 
-	if !parseConfig(serviceTimeoutConfig, setServiceTimeoutConfig, serviceTimeoutConfigName) {
+	if !ParseApolloConfig(serviceTimeoutConfig, setServiceTimeoutConfig, serviceTimeoutConfigName) {
 
 		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", serviceTimeoutConfigName))
 		panic(fmt.Sprintf("Unmarshal %s failure", serviceTimeoutConfigName))
@@ -181,7 +195,7 @@ func getConfigString(configName string) string {
 	return c
 }
 
-func parseConfig[K string, V any](configJson string, p func(map[K]V), configName string) bool {
+func ParseApolloConfig[K string, V any](configJson string, p func(map[K]V), configName string) bool {
 	b := []byte(configJson)
 	m := make(map[K]V)
 
@@ -204,25 +218,31 @@ func (c *customChangeListener) OnChange(changeEvent *storage.ChangeEvent) {
 	//fmt.Println(changeEvent.Changes)
 	for key, value := range changeEvent.Changes {
 
-		switch key {
-		case serviceConfigName:
-			parseConfig(value.NewValue.(string), setServiceConfig, serviceConfigName)
-		case signKeyConfigName:
-			parseConfig(value.NewValue.(string), setSignKey, signKeyConfigName)
-		case encryptKeyConfigName:
-			parseConfig(value.NewValue.(string), setEncryptKey, encryptKeyConfigName)
-		case serviceTimeoutConfigName:
-			parseConfig(value.NewValue.(string), setServiceTimeoutConfig, serviceTimeoutConfigName)
-		default:
-		}
-
 		logger.GetLogger().Info("change key ", zap.Any(key, value))
 
+		switch key {
+		case serviceConfigName:
+			ParseApolloConfig(value.NewValue.(string), setServiceConfig, serviceConfigName)
+		case signKeyConfigName:
+			ParseApolloConfig(value.NewValue.(string), setSignKey, signKeyConfigName)
+		case encryptKeyConfigName:
+			ParseApolloConfig(value.NewValue.(string), setEncryptKey, encryptKeyConfigName)
+		case serviceTimeoutConfigName:
+			ParseApolloConfig(value.NewValue.(string), setServiceTimeoutConfig, serviceTimeoutConfigName)
+		default:
+		}
 	}
-	//fmt.Println(changeEvent.Namespace)
-	//c.wg.Done()
+	for _, listener := range listeners {
+		listener(changeEvent)
+	}
+
 }
 
 func (c *customChangeListener) OnNewestChange(event *storage.FullChangeEvent) {
-	//write your code here
+}
+
+var listeners []func(*storage.ChangeEvent)
+
+func RegisterApolloListener(f func(*storage.ChangeEvent)) {
+	listeners = append(listeners, f)
 }

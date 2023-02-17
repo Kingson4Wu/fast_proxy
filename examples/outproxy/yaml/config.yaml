@@ -3,6 +3,7 @@ proxy:
 
 application:
   port : 8034
+  name : out_proxy
 
 rpc:
   serviceHeaderName: C_ServiceName

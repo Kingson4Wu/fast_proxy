@@ -1,25 +1,29 @@
 package main
 
 import (
+	"github.com/Kingson4Wu/fast_proxy/common/config"
 	"github.com/Kingson4Wu/fast_proxy/outproxy"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
 )
 
 func main() {
 
-	c := Config{}
-	outproxy.NewServer(&c)
+	c := &Config{}
+	outproxy.NewServer(c)
 }
 
 type Config struct {
 }
 
-func (c *Config) ForwardAddress() string {
+func (c Config) ForwardAddress() string {
 	return "http://127.0.0.1:8384/inProxy"
 }
 
 func (c *Config) ServerPort() int {
 	return 8084
+}
+
+func (c *Config) ServerName() string {
+	return "curry"
 }
 
 func (c *Config) ServiceRpcHeaderName() string {
@@ -38,6 +42,10 @@ func (c *Config) GetServiceConfig(serviceName string) *config.ServiceConfig {
 }
 
 func (c *Config) GetSignKey(serviceConfig *config.ServiceConfig) string {
+	return "abcd"
+}
+
+func (c *Config) GetSignKeyByName(name string) string {
 	return "abcd"
 }
 

@@ -1,17 +1,17 @@
 package servicediscovery
 
 import (
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"net/http"
 	"strconv"
 )
 
 func GetServiceName(req *http.Request) string {
-	return req.Header.Get(config.Get().ServiceRpcHeaderName())
+	return req.Header.Get(outconfig.Get().ServiceRpcHeaderName())
 }
 
 func GetForwardAddress() string {
-	return config.Get().ForwardAddress()
+	return outconfig.Get().ForwardAddress()
 }
 
 func GetRequestDeadTime(req *http.Request) int {

@@ -16,18 +16,13 @@ type ServiceTimeoutConfig struct {
 }
 
 type Config interface {
-	ForwardAddress() string
+	ServerName() string
 	ServerPort() int
 	ServiceRpcHeaderName() string
 	GetServiceConfig(serviceName string) *ServiceConfig
 	GetSignKey(serviceConfig *ServiceConfig) string
+	GetSignKeyByName(name string) string
 	GetEncryptKey(serviceConfig *ServiceConfig) string
 	GetEncryptKeyByName(name string) string
 	GetTimeoutConfigByName(name string, uri string) int
-}
-
-var Configuration Config
-
-func Get() Config {
-	return Configuration
 }

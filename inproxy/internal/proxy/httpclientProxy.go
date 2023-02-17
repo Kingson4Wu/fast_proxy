@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	sc "github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/limiter"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/logger"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/servicediscovery"
 	"io"
@@ -48,7 +48,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 	/** 鉴权  判断uri是否有权限等 */
 	//如何防止伪造服务名(签名验证通过即认为是)
-	clientServiceName := servicediscovery.GetServiceName(r)
+	clientServiceName := server.Center().ClientName(r)
 	requestPath := servicediscovery.RealRequestUri(r.RequestURI)
 	if !config.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -96,7 +96,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 			reqProxy = reqProxy.WithContext(ctx)
 		}
 	} else {
-		reqServiceName := sc.GetClientName(r)
+		reqServiceName := server.Center().ClientName(r)
 		timeout := config.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
 		if timeout > 0 {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)

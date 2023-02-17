@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
+	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
 	"io/ioutil"
 	"log"
@@ -67,7 +67,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		reqServiceName := servicediscovery.GetServiceName(r)
-		timeout := config.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
+		timeout := outconfig.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
 		if timeout > 0 {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)
 			defer cancel()

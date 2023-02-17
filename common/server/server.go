@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"github.com/Kingson4Wu/fast_proxy/common/config"
+	"github.com/Kingson4Wu/fast_proxy/common/network"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"go.uber.org/zap"
 	"net/http"
@@ -13,12 +15,20 @@ import (
 	"time"
 )
 
+var server *Proxy
+
+func Center() *servicediscovery.ServiceCenter {
+	return server.sc
+}
+
 type Proxy struct {
 	svr             *http.Server
 	port            int
 	wg              sync.WaitGroup
 	logger          *zap.Logger
 	shutdownTimeout time.Duration
+	sc              *servicediscovery.ServiceCenter
+	c               config.Config
 }
 
 type Option func(*Proxy)
@@ -29,40 +39,23 @@ func WithShutdownTimeout(timeout time.Duration) Option {
 	}
 }
 
-// todo
-type cc struct {
-}
-
-func (cc) Get(name string) *servicediscovery.Address {
-	return &servicediscovery.Address{
-		Ip:   "127.0.0.1",
-		Port: 8101,
-	}
-}
-
-/*func (cc) ClientName(req *http.Request) string
-	return ""
-}*/
-
-func WithServiceDiscovery(f func(name string) *servicediscovery.Address) Option {
-
+func WithServiceCenter(sc *servicediscovery.ServiceCenter) Option {
 	return func(p *Proxy) {
-		servicediscovery.Sq = cc{}
+		p.sc = sc
 	}
 }
 
-func NewServer(port int, logger *zap.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
-	servicediscovery.Sq = cc{}
-	//todo
+func NewServer(config config.Config, logger *zap.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
 
 	http.HandleFunc("/", proxyHandler)
 	svr := http.Server{
-		Addr: ":" + strconv.Itoa(port),
+		Addr: ":" + strconv.Itoa(config.ServerPort()),
 	}
 	return &Proxy{
 		svr:    &svr,
-		port:   port,
+		port:   config.ServerPort(),
 		logger: logger,
+		c:      config,
 	}
 
 }
@@ -81,6 +74,8 @@ func (p *Proxy) RegisterOnShutdown(f func()) {
 }
 
 func (p *Proxy) Start(opts ...Option) {
+
+	server = p
 
 	for _, opt := range opts {
 		opt(p)
@@ -124,9 +119,13 @@ func (p *Proxy) Start(opts ...Option) {
 	pid := os.Getpid()
 	p.logger.Info("server start ...", zap.Int("port", p.port), zap.Int("pid", pid))
 
+	intranetIp := network.GetIntranetIp()
+	stop := p.sc.Register(p.c.ServerName(), intranetIp, p.c.ServerPort())
+
 	err := p.svr.ListenAndServe()
 	if err != nil {
 		if err != http.ErrServerClosed {
+			close(stop)
 			p.logger.Error("proxy server start failed ", zap.Any("err", err))
 			return
 		}

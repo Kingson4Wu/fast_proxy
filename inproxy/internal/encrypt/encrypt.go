@@ -3,8 +3,8 @@ package encrypt
 import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/aes"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/logger"
 	"go.uber.org/zap"
 	"io"
 )

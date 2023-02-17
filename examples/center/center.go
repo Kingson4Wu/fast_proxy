@@ -3,9 +3,11 @@ package center
 import (
 	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/network"
+	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -71,4 +73,27 @@ func GetAddress(name string) string {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 
 	return strings.TrimSpace(string(bodyBytes))
+}
+
+func GetSC(f func() string) *servicediscovery.ServiceCenter {
+	sc := servicediscovery.Create().
+		AddressFunc(func(serviceName string) *servicediscovery.Address {
+			addr := GetAddress(serviceName)
+			arr := strings.Split(addr, ":")
+			if len(arr) == 2 {
+				ip := arr[0]
+				port, _ := strconv.Atoi(arr[1])
+				return &servicediscovery.Address{
+					Ip:   ip,
+					Port: port,
+				}
+			}
+			return nil
+		}).ClientNameFunc(func(req *http.Request) string {
+		return req.Header.Get(f())
+	}).RegisterFunc(func(name string, ip string, port int) chan bool {
+		return RegisterAsync(name, ip, port)
+	}).Build()
+
+	return sc
 }

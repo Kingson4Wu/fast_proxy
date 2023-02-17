@@ -2,7 +2,7 @@ proxy:
   forwardAddress: http://127.0.0.1:9833/inProxy
 
 application:
-  name : song_service
+  name : in_proxy
   port : 8033
   contextPath : /inProxy
 

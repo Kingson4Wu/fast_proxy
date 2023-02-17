@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"bytes"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
 	"io/ioutil"

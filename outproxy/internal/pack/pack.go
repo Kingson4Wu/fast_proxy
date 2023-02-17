@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/cerror"
+	"github.com/Kingson4Wu/fast_proxy/common/config"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/config"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/compress"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/encrypt"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/logger"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/sign"
+	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -87,6 +88,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 
 	defer resp.Body.Close()
 
+	//TODO
 	reqServiceName := servicediscovery.GetServiceName(resp.Request)
 
 	var bodyBytes []byte
@@ -118,7 +120,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 
 func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
-	serviceConfig := config.Get().GetServiceConfig(serviceName)
+	serviceConfig := outconfig.Get().GetServiceConfig(serviceName)
 
 	if serviceConfig == nil {
 		return nil, errors.New("get serviceConfig failure")
