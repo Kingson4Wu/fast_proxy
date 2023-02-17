@@ -1,4 +1,4 @@
-package config
+package inconfig
 
 import "github.com/Kingson4Wu/fast_proxy/common/config"
 

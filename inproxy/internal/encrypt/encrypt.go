@@ -4,13 +4,13 @@ import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/aes"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"go.uber.org/zap"
 	"io"
 )
 
 func EncodeResp(data []byte, encryptKeyName string) (result []byte, erro error) {
-	encryptKey := config.Get().GetEncryptKeyByName(encryptKeyName)
+	encryptKey := inconfig.Get().GetEncryptKeyByName(encryptKeyName)
 
 	if encryptKey == "" {
 		return nil, errors.New("get encryptKey failure")
@@ -21,7 +21,7 @@ func EncodeResp(data []byte, encryptKeyName string) (result []byte, erro error) 
 
 func DecodeReq(data []byte, encryptKeyName string) (result []byte, erro error) {
 
-	encryptKey := config.Get().GetEncryptKeyByName(encryptKeyName)
+	encryptKey := inconfig.Get().GetEncryptKeyByName(encryptKeyName)
 	if encryptKey == "" {
 		return nil, errors.New("encrypt key not exist")
 	}

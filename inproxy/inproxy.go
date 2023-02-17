@@ -3,7 +3,7 @@ package inproxy
 import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/proxy"
 	"net/http"
 	"time"
@@ -14,8 +14,8 @@ func requestProxy(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func NewServer(c config.Config, opts ...server.Option) {
-	config.Configuration = c
+func NewServer(c inconfig.Config, opts ...server.Option) {
+	inconfig.Configuration = c
 	proxy := server.NewServer(c, logger.GetLogger(), requestProxy)
 	proxy.RegisterOnShutdown(func() {
 		logger.GetLogger().Info("clean resources on shutdown...")

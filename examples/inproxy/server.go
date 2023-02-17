@@ -5,7 +5,7 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/inproxy"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 )
 
 //go:embed *
@@ -18,7 +18,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	c := config.LoadYamlConfig(configBytes)
+	c := inconfig.LoadYamlConfig(configBytes)
 
 	sc := center.GetSC(func() string { return c.ServiceRpcHeaderName() })
 

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/limiter"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/servicediscovery"
@@ -41,7 +41,7 @@ func init() {
 func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 	//参数校验
-	if !strings.HasPrefix(r.RequestURI, config.Get().ServerContextPath()) {
+	if !strings.HasPrefix(r.RequestURI, inconfig.Get().ServerContextPath()) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -50,7 +50,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	//如何防止伪造服务名(签名验证通过即认为是)
 	clientServiceName := server.Center().ClientName(r)
 	requestPath := servicediscovery.RealRequestUri(r.RequestURI)
-	if !config.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
+	if !inconfig.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -97,7 +97,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		reqServiceName := server.Center().ClientName(r)
-		timeout := config.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
+		timeout := inconfig.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
 		if timeout > 0 {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)
 			defer cancel()

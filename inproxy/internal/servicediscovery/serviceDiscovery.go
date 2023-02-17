@@ -2,7 +2,7 @@ package servicediscovery
 
 import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/config"
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,7 +21,7 @@ func GetRequestDeadTime(req *http.Request) int {
 }
 
 func RealRequestUri(uri string) string {
-	return strings.Replace(uri, config.Get().ServerContextPath(), "", 1)
+	return strings.Replace(uri, inconfig.Get().ServerContextPath(), "", 1)
 }
 
 func Forward(r *http.Request) (string, func(*http.Request)) {
