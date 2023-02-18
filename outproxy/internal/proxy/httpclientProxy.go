@@ -116,7 +116,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resProxyBody := ioutil.NopCloser(bytes.NewBuffer(body))
+		resProxyBody := io.NopCloser(bytes.NewBuffer(body))
 		defer resProxyBody.Close() // 延时关闭
 		// 复制转发的响应Body到响应Body
 		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
