@@ -9,8 +9,12 @@ type Config interface {
 	config.Config
 }
 
-var Configuration Config
+var configuration Config
 
 func Get() Config {
-	return Configuration
+	return configuration
+}
+
+func Read(c Config) {
+	configuration = c
 }

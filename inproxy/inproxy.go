@@ -15,7 +15,7 @@ func requestProxy(res http.ResponseWriter, req *http.Request) {
 }
 
 func NewServer(c inconfig.Config, opts ...server.Option) {
-	inconfig.Configuration = c
+	inconfig.Read(c)
 	proxy := server.NewServer(c, logger.GetLogger(), requestProxy)
 	proxy.RegisterOnShutdown(func() {
 		logger.GetLogger().Info("clean resources on shutdown...")
