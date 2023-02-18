@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
+	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -23,7 +23,7 @@ func init() {
 
 		Director: func(req *http.Request) {
 
-			callUrl := servicediscovery.GetForwardAddress() + req.RequestURI
+			callUrl := outconfig.Get().ForwardAddress() + req.RequestURI
 
 			u, _ := url.Parse(callUrl)
 			req.URL = u

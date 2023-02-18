@@ -5,8 +5,9 @@ import (
 	"context"
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
+	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
 	"io/ioutil"
@@ -44,7 +45,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 转发的URL
-	reqURL := servicediscovery.GetForwardAddress() + r.RequestURI
+	reqURL := outconfig.Get().ForwardAddress() + r.RequestURI
 
 	// 创建转发用的请求
 	reqProxy, err := http.NewRequest(r.Method, reqURL, bytes.NewReader(bodyBytes))
@@ -66,7 +67,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 			reqProxy = reqProxy.WithContext(ctx)
 		}
 	} else {
-		reqServiceName := servicediscovery.GetServiceName(r)
+		reqServiceName := server.Center().ClientName(r)
 		timeout := outconfig.Get().GetTimeoutConfigByName(reqServiceName, r.RequestURI)
 		if timeout > 0 {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)

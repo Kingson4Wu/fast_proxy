@@ -1,6 +1,9 @@
 package servicediscovery
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+)
 
 type ServiceCenter struct {
 	addressFunc    func(serviceName string) *Address
@@ -60,4 +63,16 @@ type ServiceQuery interface {
 type Address struct {
 	Ip   string
 	Port int
+}
+
+func GetRequestDeadTime(req *http.Request) int {
+	timestamp := req.Header.Get("request_dead_time")
+	if timestamp == "" {
+		return 0
+	}
+	op, err := strconv.Atoi(timestamp)
+	if err != nil {
+		return 0
+	}
+	return op
 }

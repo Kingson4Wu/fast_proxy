@@ -2,6 +2,7 @@ package servicediscovery
 
 import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
+	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"net/http"
 	"strconv"
@@ -9,15 +10,7 @@ import (
 )
 
 func GetRequestDeadTime(req *http.Request) int {
-	timestamp := req.Header.Get("request_request_dead_time")
-	if timestamp == "" {
-		return 0
-	}
-	op, err := strconv.Atoi(timestamp)
-	if err != nil {
-		return 0
-	}
-	return op
+	return servicediscovery.GetRequestDeadTime(req)
 }
 
 func RealRequestUri(uri string) string {

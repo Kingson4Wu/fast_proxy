@@ -9,8 +9,8 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/encrypt"
-	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/sign"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
@@ -53,7 +53,7 @@ func newSc(serviceConfig *config.ServiceConfig) *config.ServiceConfig {
 }
 
 func EncodeReq(req *http.Request) ([]byte, *cerror.Err) {
-	reqServiceName := servicediscovery.GetServiceName(req)
+	reqServiceName := server.Center().ClientName(req)
 
 	if reqServiceName == "" {
 		return nil, cerror.NewError(http.StatusBadRequest, "illegal args")
@@ -88,8 +88,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 
 	defer resp.Body.Close()
 
-	//TODO
-	reqServiceName := servicediscovery.GetServiceName(resp.Request)
+	reqServiceName := server.Center().ClientName(resp.Request)
 
 	var bodyBytes []byte
 	var err error
