@@ -8,8 +8,8 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
+	"github.com/Kingson4Wu/fast_proxy/common/sign"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/encrypt"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/sign"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -149,7 +149,7 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 	/** 签名验证 */
 	if reData.SignEnable {
 
-		bodySignature, err := sign.GenerateBodySign(bodyBytes, reData.SignKeyName)
+		bodySignature, err := sign.GenerateBodySignWithName(bodyBytes, reData.SignKeyName)
 		if err != nil {
 			return nil, nil, errors.New("generate sign failure")
 		}

@@ -21,6 +21,10 @@ func Center() *servicediscovery.ServiceCenter {
 	return server.sc
 }
 
+func Config() config.Config {
+	return server.c
+}
+
 type Proxy struct {
 	svr             *http.Server
 	port            int
