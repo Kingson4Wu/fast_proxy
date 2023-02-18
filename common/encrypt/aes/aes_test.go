@@ -2,7 +2,7 @@ package aes_test
 
 import (
 	"fmt"
-	"github.com/Kingson4Wu/fast_proxy/common/aes"
+	"github.com/Kingson4Wu/fast_proxy/common/encrypt/aes"
 	"testing"
 	"unicode/utf8"
 )

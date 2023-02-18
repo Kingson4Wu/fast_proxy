@@ -2,12 +2,9 @@ package encrypt
 
 import (
 	"errors"
-	"github.com/Kingson4Wu/fast_proxy/common/aes"
 	"github.com/Kingson4Wu/fast_proxy/common/config"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/encrypt"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
-	"go.uber.org/zap"
-	"io"
 )
 
 func EncodeReq(data []byte, serviceConfig *config.ServiceConfig) (result []byte, erro error) {
@@ -16,7 +13,7 @@ func EncodeReq(data []byte, serviceConfig *config.ServiceConfig) (result []byte,
 	if encryptKey == "" {
 		return nil, errors.New("get encryptKey failure")
 	}
-	result, erro = Encode(data, encryptKey)
+	result, erro = encrypt.Encode(data, encryptKey)
 	return
 }
 
@@ -26,36 +23,6 @@ func DecodeResp(data []byte, encryptKeyName string) (result []byte, erro error) 
 	if encryptKey == "" {
 		return nil, errors.New("encrypt key not exist")
 	}
-	result, erro = Decode(data, encryptKey)
+	result, erro = encrypt.Decode(data, encryptKey)
 	return
-}
-
-func Encode(data []byte, key string) (result []byte, erro error) {
-
-	defer func() {
-		if err := recover(); err != nil {
-			erro = errors.New("aes Encode panic")
-			logger.GetLogger().Error("", zap.Any("Encode err", err))
-		}
-	}()
-
-	result, erro = aes.AesEncrypt(data, []byte(key))
-	return
-}
-
-func Decode(data []byte, key string) (result []byte, erro error) {
-
-	defer func() {
-		if err := recover(); err != nil {
-			erro = errors.New("aes Decode panic")
-			logger.GetLogger().Error("", zap.Any("Decode err", err))
-		}
-	}()
-
-	result, erro = aes.AesDecrypt(data, []byte(key))
-	return
-}
-
-func encrypt(dst io.Writer, src io.Reader) {
-	//src.Read()
 }
