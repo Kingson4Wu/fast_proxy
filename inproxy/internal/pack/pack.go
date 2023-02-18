@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/cerror"
+	"github.com/Kingson4Wu/fast_proxy/common/compress"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
-	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/compress"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/encrypt"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/sign"
 	"io"
@@ -110,7 +110,7 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 	/** 压缩 */
 	if reData.Compress {
 
-		resultBody, ok = compress.SnappyCompress.Encode(resultBody)
+		resultBody, ok = compress.Encode(resultBody)
 		if !ok {
 			//logger.GetLogger().Error("")
 			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
@@ -163,7 +163,7 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 
 	if reData.Compress {
 		//解压
-		bodyBytes, err = compress.SnappyCompress.Decode(bodyBytes)
+		bodyBytes, err = compress.Decode(bodyBytes)
 
 		if err != nil {
 			return nil, nil, errors.New("compress decode failure")
