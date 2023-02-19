@@ -1,23 +1,31 @@
 package compress
 
 import (
-	"github.com/Kingson4Wu/fast_proxy/common/compress/snappy"
+	"github.com/Kingson4Wu/fast_proxy/common/compress/gzip"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 )
 
-// TODO 支持其他压缩方式， 抽象接口
-var c *snappy.Compress
+var c Compress
 
 func init() {
-	c = &snappy.Compress{
+	/*c = &snappy.Snappy{
+		Log: logger.GetLogger(),
+	}*/
+
+	c = &gzip.Gzip{
 		Log: logger.GetLogger(),
 	}
 }
 
-func Encode(data []byte) (result []byte, ok bool) {
+func Encode(data []byte) ([]byte, error) {
 	return c.Encode(data)
 }
 
-func Decode(data []byte) (result []byte, erro error) {
+func Decode(data []byte) ([]byte, error) {
 	return c.Decode(data)
+}
+
+type Compress interface {
+	Encode(data []byte) ([]byte, error)
+	Decode(data []byte) ([]byte, error)
 }

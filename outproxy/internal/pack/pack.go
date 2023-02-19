@@ -131,7 +131,6 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
 	var resultBody []byte
 	var err error
-	var ok bool
 
 	/** 加密 */
 	if sc.EncryptEnable {
@@ -148,8 +147,8 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 	/** 压缩 */
 	if sc.CompressEnable {
 
-		resultBody, ok = compress.Encode(resultBody)
-		if !ok {
+		resultBody, err = compress.Encode(resultBody)
+		if err != nil {
 			//logger.GetLogger().Error("")
 			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
 			return nil, errors.New("compress failure")

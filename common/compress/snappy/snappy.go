@@ -6,22 +6,22 @@ import (
 	"go.uber.org/zap"
 )
 
-type Compress struct {
+type Snappy struct {
 	Log *zap.Logger
 }
 
-func (s *Compress) Encode(data []byte) (result []byte, ok bool) {
+func (s *Snappy) Encode(data []byte) (result []byte, erro error) {
 	defer func() {
 		if err := recover(); err != nil {
-			ok = false
+			erro = errors.New("snappy encode panic")
 			s.Log.Error("", zap.Any("Encode err", err))
 		}
 	}()
 
-	return snappy.Encode(nil, data), true
+	return snappy.Encode(nil, data), nil
 }
 
-func (s *Compress) Decode(data []byte) (result []byte, erro error) {
+func (s *Snappy) Decode(data []byte) (result []byte, erro error) {
 	defer func() {
 		if err := recover(); err != nil {
 			erro = errors.New("snappy decode panic")

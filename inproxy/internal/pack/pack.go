@@ -94,7 +94,6 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 
 	var resultBody []byte
 	var err error
-	var ok bool
 	/** 加密 */
 	if reData.EncryptEnable {
 
@@ -110,8 +109,8 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 	/** 压缩 */
 	if reData.Compress {
 
-		resultBody, ok = compress.Encode(resultBody)
-		if !ok {
+		resultBody, err = compress.Encode(resultBody)
+		if err != nil {
 			//logger.GetLogger().Error("")
 			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
 			return nil, errors.New("compress failure")
