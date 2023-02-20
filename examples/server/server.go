@@ -11,23 +11,34 @@ import (
 
 func main() {
 
-	service(8101, "token_service")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/service", handler)
+	go service(8101, "token_service", mux)
 
-	//go service(8102, "search_service")
+	mux2 := http.NewServeMux()
+	mux2.HandleFunc("/api/service", searchHandler)
+	go service(8102, "search_service", mux2)
+
+	// 防止程序退出
+	select {}
 
 }
 
-func service(serverPort int, serviceName string) {
+func service(serverPort int, serviceName string, mux http.Handler) {
+
+	server := &http.Server{
+		Addr:    ":" + strconv.Itoa(serverPort),
+		Handler: mux,
+	}
+
 	intranetIp := network.GetIntranetIp()
 	/**
 	curl "http://127.0.0.1:8080/api/service" |jq '.'
 	*/
 
-	http.HandleFunc("/api/service", handler)
-
 	stop := center.RegisterAsync(serviceName, intranetIp, serverPort)
 
-	if err := http.ListenAndServe(":"+strconv.Itoa(serverPort), nil); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		close(stop)
 		log.Fatal(err)
 	}

@@ -16,13 +16,13 @@ serviceConfig:
     signEnable: true
     compressEnable: true
     compressAlgorithm: 1
-  search_service:
+  chat_service:
     encryptKeyName: encrypt.key.room.v2
     signKeyName: sign.key.room.v1
     encryptEnable: true
     signEnable: true
     compressEnable: true
-    compressAlgorithm: 1
+    compressAlgorithm: 0
 
 signKeyConfig:
   sign.key.room.v1: abcd

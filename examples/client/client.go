@@ -11,13 +11,18 @@ import (
 
 func main() {
 
-	req, err := http.NewRequest("POST", getAddress(), strings.NewReader(fmt.Sprintf("param=%s", "hello")))
+	send("song_service", "token_service")
+	send("chat_service", "search_service")
+}
+
+func send(clientName, destServiceName string) {
+	req, err := http.NewRequest("POST", getAddress(destServiceName), strings.NewReader(fmt.Sprintf("param=%s", "hello")))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("C_ServiceName", "song_service")
+	req.Header.Set("C_ServiceName", clientName)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -30,6 +35,8 @@ func main() {
 		return
 	}
 
+	log.Printf("resp code :%v\n", resp.StatusCode)
+
 	defer func() {
 		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
@@ -40,7 +47,7 @@ func main() {
 	log.Println(string(bodyBytes))
 }
 
-func getAddress() string {
+func getAddress(destServiceName string) string {
 
 	proxyEnable := true
 
@@ -49,10 +56,10 @@ func getAddress() string {
 		if addr == "" {
 			panic("service address not exist")
 		}
-		return fmt.Sprintf("http://%s/token_service/api/service", addr)
+		return fmt.Sprintf("http://%s/%s/api/service", addr, destServiceName)
 	}
 
-	addr := center.GetAddress("token_service")
+	addr := center.GetAddress(destServiceName)
 
 	if addr == "" {
 		panic("service address not exist")

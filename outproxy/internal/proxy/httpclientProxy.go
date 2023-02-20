@@ -123,6 +123,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		io.Copy(w, resProxyBody)
 	} else {
 		io.Copy(w, responseProxy.Body)
+		w.WriteHeader(responseProxy.StatusCode)
 	}
 
 	// 响应状态码
