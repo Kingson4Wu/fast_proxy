@@ -109,7 +109,7 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 	/** 压缩 */
 	if reData.Compress {
 
-		resultBody, err = compress.Encode(resultBody)
+		resultBody, err = compress.Encode(resultBody, reData.CompressAlgorithm)
 		if err != nil {
 			//logger.GetLogger().Error("")
 			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
@@ -124,6 +124,7 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 	stSend.Payload = resultBody
 	stSend.EncryptEnable = reData.EncryptEnable
 	stSend.EncryptKeyName = reData.EncryptKeyName
+	stSend.CompressAlgorithm = reData.CompressAlgorithm
 
 	pData, err := proto.Marshal(stSend)
 	if err != nil {
@@ -162,7 +163,7 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 
 	if reData.Compress {
 		//解压
-		bodyBytes, err = compress.Decode(bodyBytes)
+		bodyBytes, err = compress.Decode(bodyBytes, reData.CompressAlgorithm)
 
 		if err != nil {
 			return nil, nil, errors.New("compress decode failure")

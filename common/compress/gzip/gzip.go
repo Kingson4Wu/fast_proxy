@@ -3,12 +3,10 @@ package gzip
 import (
 	"bytes"
 	"compress/gzip"
-	"go.uber.org/zap"
 	"io"
 )
 
 type Gzip struct {
-	Log *zap.Logger
 }
 
 func (*Gzip) Encode(data []byte) ([]byte, error) {

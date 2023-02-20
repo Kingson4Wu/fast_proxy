@@ -2,7 +2,6 @@ syntax = 'proto3';
 
 option go_package = "proto/protobuf";
 
-
 message ProxyData {
     string sign = 1;
     bool compress = 2;
@@ -11,8 +10,10 @@ message ProxyData {
     string signKeyName = 5;
     bool encryptEnable = 6;
     string encryptKeyName = 7;
+    int32 compressAlgorithm = 8;
 
     //bytes headerPayload = 8;
 }
 
-//protoc --go_out=. ./proto/*.proto
+//cd common
+//protoc --go_out=. ./*.proto

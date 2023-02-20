@@ -2,13 +2,14 @@ syntax = 'proto3';
 
 option go_package = "proto/protobuf";
 
-
 message ProxyRespData {
     
     bytes payload = 1;
     bool compress = 2;
     bool encryptEnable = 3;
     string encryptKeyName = 4;
+
+    int32 compressAlgorithm = 5;
 
     //bytes headerPayload = 5;
     

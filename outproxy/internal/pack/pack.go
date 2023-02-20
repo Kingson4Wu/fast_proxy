@@ -14,7 +14,6 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/encrypt"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync"
 
@@ -64,7 +63,7 @@ func EncodeReq(req *http.Request) ([]byte, *cerror.Err) {
 	b := pool.GetDataBufferChunk(req.ContentLength)
 	defer pool.PutDataBufferChunk(b)
 	if b == nil {
-		bodyBytes, err = ioutil.ReadAll(req.Body)
+		bodyBytes, err = io.ReadAll(req.Body)
 	} else {
 		bf := bytes.NewBuffer(*b)
 		bf.Reset()
@@ -96,7 +95,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 	defer pool.PutDataBufferChunk(b)
 
 	if b == nil {
-		bodyBytes, err = ioutil.ReadAll(resp.Body)
+		bodyBytes, err = io.ReadAll(resp.Body)
 	} else {
 		bf := bytes.NewBuffer(*b)
 		bf.Reset()
@@ -147,7 +146,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 	/** 压缩 */
 	if sc.CompressEnable {
 
-		resultBody, err = compress.Encode(resultBody)
+		resultBody, err = compress.Encode(resultBody, sc.CompressAlgorithm)
 		if err != nil {
 			//logger.GetLogger().Error("")
 			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
@@ -177,6 +176,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 	stSend.SignKeyName = sc.SignKeyName
 	stSend.EncryptEnable = sc.EncryptEnable
 	stSend.EncryptKeyName = sc.EncryptKeyName
+	stSend.CompressAlgorithm = sc.CompressAlgorithm
 
 	/* stSend := &protobuf.ProxyData{
 		Sign:           bodySign,
@@ -210,7 +210,7 @@ func Decode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
 	//解压
 	if reData.Compress {
-		bodyBytes, err = compress.Decode(bodyBytes)
+		bodyBytes, err = compress.Decode(bodyBytes, reData.CompressAlgorithm)
 
 		if err != nil {
 			return nil, errors.New("compress decode failure")

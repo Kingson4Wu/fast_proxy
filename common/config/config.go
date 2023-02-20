@@ -1,11 +1,12 @@
 package config
 
 type ServiceConfig struct {
-	EncryptKeyName string `json:"encrypt.key.name"`
-	SignKeyName    string `json:"sign.key.name"`
-	EncryptEnable  bool   `json:"encrypt.enable"`
-	SignEnable     bool   `json:"sign.enable"`
-	CompressEnable bool   `json:"compress.enable"`
+	EncryptKeyName    string `json:"encrypt.key.name"`
+	SignKeyName       string `json:"sign.key.name"`
+	EncryptEnable     bool   `json:"encrypt.enable"`
+	SignEnable        bool   `json:"sign.enable"`
+	CompressEnable    bool   `json:"compress.enable"`
+	CompressAlgorithm int32  `json:"compress.algorithm"`
 }
 
 type EncryptKeyConfig map[string]string

@@ -41,6 +41,8 @@ func (c *yamlConfig) GetServiceConfig(serviceName string) *ServiceConfig {
 		EncryptEnable:  viper.GetBool(fmt.Sprintf("serviceConfig.%s.encryptEnable", serviceName)),
 		SignEnable:     viper.GetBool(fmt.Sprintf("serviceConfig.%s.signEnable", serviceName)),
 		CompressEnable: viper.GetBool(fmt.Sprintf("serviceConfig.%s.compressEnable", serviceName)),
+		/** 强制转换若不存在，将返回0 */
+		CompressAlgorithm: viper.GetInt32(fmt.Sprintf("serviceConfig.%s.compressAlgorithm", serviceName)),
 	}
 }
 
