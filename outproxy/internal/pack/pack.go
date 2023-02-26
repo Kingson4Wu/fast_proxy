@@ -6,7 +6,6 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/cerror"
 	"github.com/Kingson4Wu/fast_proxy/common/compress"
 	"github.com/Kingson4Wu/fast_proxy/common/config"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
@@ -17,7 +16,6 @@ import (
 	"net/http"
 	"sync"
 
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -137,7 +135,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 		resultBody, err = encrypt.EncodeReq(bodyBytes, sc)
 
 		if err != nil {
-			logger.GetLogger().Error("", zap.Error(err))
+			server.GetLogger().Errorf("%s", err)
 			return nil, errors.New("encrypt failure")
 		}
 
@@ -160,7 +158,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 		bodySign, err = sign.GenerateBodySign(resultBody, sc)
 
 		if err != nil {
-			logger.GetLogger().Error("", zap.Error(err))
+			server.GetLogger().Error("%s", err)
 			return nil, errors.New("sign failure")
 		}
 

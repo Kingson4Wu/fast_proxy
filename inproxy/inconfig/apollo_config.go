@@ -5,13 +5,12 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/config"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/apolloconfig/agollo/v4/storage"
-	"go.uber.org/zap"
 )
 
-func LoadApolloConfig(appId string, namespace string, cluster string, address string) Config {
+func LoadApolloConfig(appId string, namespace string, cluster string, address string, logger logger.Logger) Config {
 
 	c := &apolloConfig{
-		config.LoadApolloConfig(appId, namespace, cluster, address),
+		config.LoadApolloConfig(appId, namespace, cluster, address, logger),
 	}
 	parseAllConfig()
 
@@ -66,7 +65,7 @@ func parseAllConfig() {
 
 	if !config.ParseApolloConfig(serviceCallConfig, setServiceCallConfig, serviceCallConfigName) {
 
-		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", serviceCallConfigName))
+		config.ApolloConfig().Log.Error("Unmarshal failure ... ", "name", serviceCallConfigName)
 		panic(fmt.Sprintf("Unmarshal %s failure", serviceCallConfigName))
 	}
 }

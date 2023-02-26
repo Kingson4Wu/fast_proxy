@@ -1,7 +1,7 @@
 package outproxy
 
 import (
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/logger/zap"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/proxy"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
@@ -45,11 +45,11 @@ func requestProxy(res http.ResponseWriter, req *http.Request) {
 
 func NewServer(c outconfig.Config, opts ...server.Option) {
 	outconfig.Read(c)
-	proxy := server.NewServer(c, logger.GetLogger(), requestProxy)
+	proxy := server.NewServer(c, zap.DefaultLogger(), requestProxy)
 	proxy.RegisterOnShutdown(func() {
-		logger.GetLogger().Info("clean resources on shutdown...")
+		server.GetLogger().Info("clean resources on shutdown...")
 		time.Sleep(2 * time.Second)
-		logger.GetLogger().Info("clean resources ok")
+		server.GetLogger().Info("clean resources ok")
 	})
 
 	var options []server.Option

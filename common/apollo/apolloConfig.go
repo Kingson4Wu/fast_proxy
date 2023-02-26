@@ -2,16 +2,16 @@ package apollo
 
 import (
 	"fmt"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/apolloconfig/agollo/v4"
 	"github.com/apolloconfig/agollo/v4/agcache"
 	"github.com/apolloconfig/agollo/v4/env/config"
-	"go.uber.org/zap"
 )
 
 var c *ApolloConfig
 
 type ApolloConfig struct {
-	Log *zap.Logger
+	Log logger.Logger
 	agollo.Client
 	agcache.CacheInterface
 	Namespace string

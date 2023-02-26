@@ -3,8 +3,7 @@ package encrypt
 import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/encrypt/aes"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
-	"go.uber.org/zap"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"io"
 )
 
@@ -13,7 +12,7 @@ func Encode(data []byte, key string) (result []byte, erro error) {
 	defer func() {
 		if err := recover(); err != nil {
 			erro = errors.New("aes Encode panic")
-			logger.GetLogger().Error("", zap.Any("Encode err", err))
+			server.GetLogger().Errorf("Encode err:%s", err)
 		}
 	}()
 
@@ -26,7 +25,7 @@ func Decode(data []byte, key string) (result []byte, erro error) {
 	defer func() {
 		if err := recover(); err != nil {
 			erro = errors.New("aes Decode panic")
-			logger.GetLogger().Error("", zap.Any("Decode err", err))
+			server.GetLogger().Errorf("Decode err:%s", err)
 		}
 	}()
 

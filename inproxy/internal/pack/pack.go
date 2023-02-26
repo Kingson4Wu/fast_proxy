@@ -5,9 +5,9 @@ import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/cerror"
 	"github.com/Kingson4Wu/fast_proxy/common/compress"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/pool"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/sign"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/encrypt"
 	"io"
@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"sync"
 
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -100,7 +99,7 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 		resultBody, err = encrypt.EncodeResp(bodyBytes, reData.EncryptKeyName)
 
 		if err != nil {
-			logger.GetLogger().Error("", zap.Error(err))
+			server.GetLogger().Errorf("%s", err)
 			return nil, errors.New("encrypt failure")
 		}
 

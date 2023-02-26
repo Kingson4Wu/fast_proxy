@@ -1,61 +1,166 @@
+// Package logger
+// copy from github.com/robfig/cron/v3@v3.0.1/logger.go
 package logger
 
 import (
+	"io"
+	"log"
 	"os"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
+	"strings"
+	"time"
 )
 
-var log *zap.Logger
+// DefaultLogger is used by Cron if none is specified.
+var DefaultLogger = PrintfLogger(log.New(os.Stdout, "fastProxy: ", log.LstdFlags), os.Stdout)
 
-//TODO
+// DiscardLogger can be used by callers to discard all log messages.
+var DiscardLogger = PrintfLogger(log.New(io.Discard, "", 0), io.Discard)
 
-func init() {
+var VerboseLogger = VerbosePrintfLogger(log.New(os.Stdout, "fastProxy: ", log.LstdFlags), os.Stdout)
 
-	var coreArr []zapcore.Core
+type Level int
 
-	//获取编码器
-	encoderConfig := zap.NewProductionEncoderConfig()            //NewJSONEncoder()输出json格式，NewConsoleEncoder()输出普通文本格式
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder        //指定时间格式
-	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder //按级别显示不同颜色，不需要的话取值zapcore.CapitalLevelEncoder就可以了
-	//encoderConfig.EncodeCaller = zapcore.FullCallerEncoder        //显示完整文件路径
-	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+const (
+	DEBUG Level = iota
+	INFO
+	WARN
+	ERROR
+)
 
-	//日志级别
-	highPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //error级别
-		return lev >= zap.ErrorLevel
-	})
-	lowPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //info和debug级别,debug级别是最低的
-		return lev < zap.ErrorLevel && lev >= zap.DebugLevel
-	})
+// Logger is the interface used in this package for logging, so that any backend
+// can be plugged in. It is a subset of the github.com/go-logr/logr interface.
+type Logger interface {
+	Debug(msg string, keysAndValues ...interface{})
+	Debugf(template string, args ...interface{})
 
-	//info文件writeSyncer
-	infoFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./work/log/info.log", //日志文件存放目录，如果文件夹不存在会自动创建
-		MaxSize:    2,                     //文件大小限制,单位MB
-		MaxBackups: 100,                   //最大保留日志文件数量
-		MaxAge:     30,                    //日志文件保留天数
-		Compress:   false,                 //是否压缩处理
-	})
-	infoFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(infoFileWriteSyncer, zapcore.AddSync(os.Stdout)), lowPriority) //第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-	//error文件writeSyncer
-	errorFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./work/log/error.log", //日志文件存放目录
-		MaxSize:    1,                      //文件大小限制,单位MB
-		MaxBackups: 5,                      //最大保留日志文件数量
-		MaxAge:     30,                     //日志文件保留天数
-		Compress:   false,                  //是否压缩处理
-	})
-	errorFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(errorFileWriteSyncer, zapcore.AddSync(os.Stdout)), highPriority) //第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
+	Info(msg string, keysAndValues ...interface{})
+	Infof(template string, args ...interface{})
 
-	coreArr = append(coreArr, infoFileCore)
-	coreArr = append(coreArr, errorFileCore)
-	log = zap.New(zapcore.NewTee(coreArr...), zap.AddCaller()) //zap.AddCaller()为显示文件名和行号，可省略
+	Warn(msg string, keysAndValues ...interface{})
+	Warnf(template string, args ...interface{})
 
+	Error(msg string, keysAndValues ...interface{})
+	Errorf(template string, args ...interface{})
+
+	GetWriter() io.Writer
+
+	Flush()
 }
 
-func GetLogger() *zap.Logger {
-	return log
+// PrintfLogger wraps a Printf-based logger (such as the standard library "log")
+// into an implementation of the Logger interface which logs errors only.
+func PrintfLogger(l interface{ Printf(string, ...interface{}) }, w io.Writer) Logger {
+	return printfLogger{l, ERROR, w}
+}
+
+// VerbosePrintfLogger wraps a Printf-based logger (such as the standard library
+// "log") into an implementation of the Logger interface which logs everything.
+func VerbosePrintfLogger(l interface{ Printf(string, ...interface{}) }, w io.Writer) Logger {
+	return printfLogger{l, DEBUG, w}
+}
+
+type printfLogger struct {
+	logger   interface{ Printf(string, ...interface{}) }
+	logLevel Level
+	w        io.Writer
+}
+
+func (pl printfLogger) Debug(msg string, keysAndValues ...interface{}) {
+	if pl.logLevel <= DEBUG {
+		keysAndValues = formatTimes(keysAndValues)
+		pl.logger.Printf(
+			formatString(len(keysAndValues)),
+			append([]interface{}{"DEBUG", msg}, keysAndValues...)...)
+	}
+}
+
+func (pl printfLogger) Debugf(template string, args ...interface{}) {
+	if pl.logLevel <= DEBUG {
+		pl.logger.Printf("DEBUG "+
+			template, args...)
+	}
+}
+
+func (pl printfLogger) Info(msg string, keysAndValues ...interface{}) {
+	if pl.logLevel <= INFO {
+		keysAndValues = formatTimes(keysAndValues)
+		pl.logger.Printf(
+			formatString(len(keysAndValues)),
+			append([]interface{}{"INFO", msg}, keysAndValues...)...)
+	}
+}
+
+func (pl printfLogger) Infof(template string, args ...interface{}) {
+	if pl.logLevel <= INFO {
+		pl.logger.Printf("INFO "+
+			template, args...)
+	}
+}
+
+func (pl printfLogger) Warn(msg string, keysAndValues ...interface{}) {
+	if pl.logLevel <= WARN {
+		keysAndValues = formatTimes(keysAndValues)
+		pl.logger.Printf(
+			formatString(len(keysAndValues)),
+			append([]interface{}{"WARN", msg}, keysAndValues...)...)
+	}
+}
+
+func (pl printfLogger) Warnf(template string, args ...interface{}) {
+	if pl.logLevel <= WARN {
+		pl.logger.Printf("WARN "+
+			template, args...)
+	}
+}
+
+func (pl printfLogger) Error(msg string, keysAndValues ...interface{}) {
+	keysAndValues = formatTimes(keysAndValues)
+	if pl.logLevel <= ERROR {
+		pl.logger.Printf(
+			formatString(len(keysAndValues)),
+			append([]interface{}{"ERROR", msg}, keysAndValues...)...)
+	}
+}
+
+func (pl printfLogger) Errorf(template string, args ...interface{}) {
+	if pl.logLevel <= ERROR {
+		pl.logger.Printf("ERROR "+
+			template, args...)
+	}
+}
+
+func (pl printfLogger) GetWriter() io.Writer {
+	return pl.w
+}
+
+func (pl printfLogger) Flush() {
+}
+
+// formatString returns a logfmt-like format string for the number of
+// key/values.
+func formatString(numKeysAndValues int) string {
+	var sb strings.Builder
+	sb.WriteString("%s")
+	if numKeysAndValues > 0 {
+		sb.WriteString(", ")
+	}
+	for i := 0; i < numKeysAndValues/2; i++ {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString("%v=%v")
+	}
+	return sb.String()
+}
+
+// formatTimes formats any time.Time values as RFC3339.
+func formatTimes(keysAndValues []interface{}) []interface{} {
+	var formattedArgs []interface{}
+	for _, arg := range keysAndValues {
+		if t, ok := arg.(time.Time); ok {
+			arg = t.Format(time.RFC3339)
+		}
+		formattedArgs = append(formattedArgs, arg)
+	}
+	return formattedArgs
 }

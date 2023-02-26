@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
@@ -15,8 +14,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
-	"go.uber.org/zap"
 )
 
 var client *http.Client
@@ -90,7 +87,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	if err != nil {
-		logger.GetLogger().Error("转发请求发生错误", zap.Any("req forward err", err))
+		server.GetLogger().Error("转发请求发生错误", "req forward err", err)
 
 		if errors.Is(err, context.DeadlineExceeded) {
 			w.WriteHeader(http.StatusGatewayTimeout)

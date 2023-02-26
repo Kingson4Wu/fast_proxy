@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/apollo"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
-
 	"github.com/apolloconfig/agollo/v4"
 	"github.com/apolloconfig/agollo/v4/agcache"
 	"github.com/apolloconfig/agollo/v4/storage"
-	"go.uber.org/zap"
 )
 
 var config *apollo.ApolloConfig
@@ -18,15 +16,18 @@ func ApolloConfig() *apollo.ApolloConfig {
 	return config
 }
 
-func LoadApolloConfig(appId string, namespace string, cluster string, address string) Config {
+var log logger.Logger
 
+func LoadApolloConfig(appId string, namespace string, cluster string, address string, logger logger.Logger) Config {
+
+	log = logger
 	applicationConfig, applicationClient := initApollo(appId, namespace, cluster, address)
 
 	c2 := &customChangeListener{}
 	(*applicationClient).AddChangeListener(c2)
 
 	config = &apollo.ApolloConfig{
-		Log:            logger.GetLogger(),
+		Log:            log,
 		Client:         *applicationClient,
 		CacheInterface: *applicationConfig,
 		Namespace:      namespace,
@@ -44,11 +45,11 @@ func initApollo(appId string, namespace string, cluster string, address string) 
 	nsConfig := (*client).GetConfigCache(namespace)
 
 	if nsConfig == nil {
-		logger.GetLogger().Error("", zap.String("appId", appId), zap.String("namespace", namespace), zap.String("cluster", cluster), zap.String("address", address))
+		log.Error("", "appId", appId, "namespace", namespace, "cluster", cluster, "address", address)
 		panic("init apollo failure")
 	}
 
-	logger.GetLogger().Info("初始化Apollo配置成功", zap.String("appId", appId), zap.String("namespace", namespace), zap.String("cluster", cluster), zap.String("address", address))
+	log.Info("初始化Apollo配置成功", "appId", appId, "namespace", namespace, "cluster", cluster, "address", address)
 
 	return &nsConfig, client
 
@@ -157,7 +158,7 @@ func parseAllConfig() {
 	serviceConfigJson := getConfigString(serviceConfigName)
 	if !ParseApolloConfig(serviceConfigJson, setServiceConfig, serviceConfigName) {
 
-		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", serviceConfigName))
+		log.Error("Unmarshal failure ... ", "name", serviceConfigName)
 		panic(fmt.Sprintf("Unmarshal %s failure", serviceConfigName))
 	}
 
@@ -165,7 +166,7 @@ func parseAllConfig() {
 
 	if !ParseApolloConfig(encryptKeyConfigJson, setEncryptKey, encryptKeyConfigName) {
 
-		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", encryptKeyConfigName))
+		log.Error("Unmarshal failure ... ", "name", encryptKeyConfigName)
 		panic(fmt.Sprintf("Unmarshal %s failure", encryptKeyConfigName))
 	}
 
@@ -173,7 +174,7 @@ func parseAllConfig() {
 
 	if !ParseApolloConfig(signKeyConfigJson, setSignKey, signKeyConfigName) {
 
-		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", signKeyConfigName))
+		log.Error("Unmarshal failure ... ", "name", signKeyConfigName)
 		panic(fmt.Sprintf("Unmarshal %s failure", signKeyConfigName))
 	}
 
@@ -181,7 +182,7 @@ func parseAllConfig() {
 
 	if !ParseApolloConfig(serviceTimeoutConfig, setServiceTimeoutConfig, serviceTimeoutConfigName) {
 
-		logger.GetLogger().Error("Unmarshal failure ... ", zap.String("name", serviceTimeoutConfigName))
+		log.Error("Unmarshal failure ... ", "name", serviceTimeoutConfigName)
 		panic(fmt.Sprintf("Unmarshal %s failure", serviceTimeoutConfigName))
 	}
 }
@@ -189,7 +190,7 @@ func parseAllConfig() {
 func getConfigString(configName string) string {
 	c := config.GetString(configName)
 	if c == "" {
-		logger.GetLogger().Error("get failure ... ", zap.String("name", configName))
+		log.Error("get failure ... ", "name", configName)
 		panic(fmt.Sprintf("get %s failure", configName))
 	}
 	return c
@@ -201,7 +202,7 @@ func ParseApolloConfig[K string, V any](configJson string, p func(map[K]V), conf
 
 	err := json.Unmarshal(b, &m)
 	if err != nil {
-		logger.GetLogger().Error("get failure ... ", zap.String("name", configName))
+		log.Error("get failure ... ", "name", configName)
 		return false
 	}
 	p(m)
@@ -218,7 +219,7 @@ func (c *customChangeListener) OnChange(changeEvent *storage.ChangeEvent) {
 	//fmt.Println(changeEvent.Changes)
 	for key, value := range changeEvent.Changes {
 
-		logger.GetLogger().Info("change key ", zap.Any(key, value))
+		log.Info("change key ", key, value)
 
 		switch key {
 		case serviceConfigName:

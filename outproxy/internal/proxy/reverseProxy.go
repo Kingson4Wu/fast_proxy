@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"bytes"
-	"github.com/Kingson4Wu/fast_proxy/common/logger"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io/ioutil"
@@ -11,8 +11,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-
-	"go.uber.org/zap"
 )
 
 var proxy *httputil.ReverseProxy
@@ -32,10 +30,10 @@ func init() {
 
 		ModifyResponse: func(resp *http.Response) error {
 
-			logger.GetLogger().Info("resp :", zap.String("status", resp.Status))
-			logger.GetLogger().Info("resp headers:")
+			server.GetLogger().Info("resp :", "status", resp.Status)
+			server.GetLogger().Info("resp headers:")
 			for hk, hv := range resp.Header {
-				logger.GetLogger().Info("", zap.String(hk, strings.Join(hv, ",")))
+				server.GetLogger().Info("", hk, strings.Join(hv, ","))
 			}
 
 			body, err := pack.DecodeResp(resp)
@@ -54,11 +52,11 @@ func init() {
 
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
 			if err != nil {
-				logger.GetLogger().Error("ErrorHandler catch err:", zap.Error(err))
+				server.GetLogger().Errorf("ErrorHandler catch err:%s", err)
 
 				w.WriteHeader(http.StatusBadGateway)
 				//_, _ = fmt.Println(w, err.Error())
-				logger.GetLogger().Error("", zap.Any("w", w), zap.Any("Encode err", err))
+				server.GetLogger().Error("", "w", w, "Encode err", err)
 			}
 		},
 	}

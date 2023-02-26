@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/Kingson4Wu/fast_proxy/common/config"
+	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/network"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"go.uber.org/zap"
@@ -25,11 +26,15 @@ func Config() config.Config {
 	return server.c
 }
 
+func GetLogger() logger.Logger {
+	return server.logger
+}
+
 type Proxy struct {
 	svr             *http.Server
 	port            int
 	wg              sync.WaitGroup
-	logger          *zap.Logger
+	logger          logger.Logger
 	shutdownTimeout time.Duration
 	sc              *servicediscovery.ServiceCenter
 	c               config.Config
@@ -49,7 +54,7 @@ func WithServiceCenter(sc *servicediscovery.ServiceCenter) Option {
 	}
 }
 
-func NewServer(config config.Config, logger *zap.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
+func NewServer(config config.Config, logger logger.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
 
 	http.HandleFunc("/", proxyHandler)
 	svr := http.Server{
