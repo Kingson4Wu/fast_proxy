@@ -25,6 +25,10 @@ func (c *yamlConfig) GetCallTypeConfigByName(name string, uri string) int {
 	return viper.GetInt(fmt.Sprintf("serviceCallTypeConfig.%s.%s.callType", name, uri))
 }
 
+func (c *yamlConfig) ServiceQps(name string, uri string) int {
+	return viper.GetInt(fmt.Sprintf("serviceCallTypeConfig.%s.%s.qps", name, uri))
+}
+
 func (c *yamlConfig) ContainsCallPrivilege(name string, uri string) bool {
 	return c.GetCallTypeConfigByName(name, uri) > 0
 }

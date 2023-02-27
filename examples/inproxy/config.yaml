@@ -29,9 +29,11 @@ serviceCallTypeConfig:
   song_service:
     /token_service/api/service:
       callType: 1
+      qps: 10
   chat_service:
     /search_service/api/service:
       callType: 1
+      qps: 20
 
 httpClient:
   MaxIdleConns: 5000

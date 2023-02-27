@@ -1,39 +1,41 @@
 package limiter
 
 import (
+	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"golang.org/x/time/rate"
 	"sync"
 )
 
-var limitMap map[string]*rate.Limiter
+var limitMap sync.Map
 var keyLocks sync.Map
-
-func init() {
-	// https://cloud.tencent.com/developer/article/1847918
-	// limiter := rate.NewLimiter(10, 100)
-
-	limitMap = make(map[string]*rate.Limiter)
-}
 
 func IsLimit(serviceName string, uri string) bool {
 	key := serviceName + "_" + uri
 
-	limiter, ok := limitMap[key]
+	// 并发安全地从 limitMap 中读取 limiter
+	limiterI, ok := limitMap.Load(key)
 	if ok {
-		return limiter.Allow()
+		limiter := limiterI.(*rate.Limiter)
+		return !limiter.Allow()
 	}
 
+	// 获取 key 对应的锁，避免不同 key 互相影响
 	keyLock, _ := keyLocks.LoadOrStore(key, &sync.Mutex{})
 	keyLock.(*sync.Mutex).Lock()
 	defer keyLock.(*sync.Mutex).Unlock()
 
-	limiter, ok = limitMap[key]
+	// 再次从 limitMap 中读取 limiter
+	limiterI, ok = limitMap.Load(key)
 	if ok {
-		return limiter.Allow()
+		limiter := limiterI.(*rate.Limiter)
+		return !limiter.Allow()
 	}
-	qps := 10
-	limiter = rate.NewLimiter(rate.Limit(qps), qps)
-	limitMap[key] = limiter
 
-	return limiter.Allow()
+	qps := inconfig.Get().ServiceQps(serviceName, uri)
+	limiter := rate.NewLimiter(rate.Limit(qps), qps)
+
+	// 并发安全地向 limitMap 中写入 limiter
+	limitMap.Store(key, limiter)
+
+	return !limiter.Allow()
 }

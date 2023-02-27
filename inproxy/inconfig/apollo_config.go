@@ -39,6 +39,17 @@ func (c *apolloConfig) GetCallTypeConfigByName(name string, uri string) int {
 	return 0
 }
 
+func (c *apolloConfig) ServiceQps(name string, uri string) int {
+	v, ok := serviceCallConfigMap[name]
+	if ok {
+		v, ok := v[uri]
+		if ok {
+			return v.Qps
+		}
+	}
+	return 0
+}
+
 func (c *apolloConfig) ContainsCallPrivilege(name string, uri string) bool {
 	v, ok := serviceCallConfigMap[name]
 	if ok {
