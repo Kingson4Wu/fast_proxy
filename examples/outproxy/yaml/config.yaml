@@ -31,3 +31,7 @@ signKeyConfig:
 encryptKeyConfig:
   encrypt.key.room.v1: ABCDABCDABCDABCDW
   encrypt.key.room.v2: ABCDABCDABCDABCD
+
+httpClient:
+  MaxIdleConns: 5000
+  MaxIdleConnsPerHost: 3000

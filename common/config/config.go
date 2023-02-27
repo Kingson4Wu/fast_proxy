@@ -26,4 +26,7 @@ type Config interface {
 	GetEncryptKey(serviceConfig *ServiceConfig) string
 	GetEncryptKeyByName(name string) string
 	GetTimeoutConfigByName(name string, uri string) int
+
+	HttpClientMaxIdleConns() int
+	HttpClientMaxIdleConnsPerHost() int
 }

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/Kingson4Wu/fast_proxy/common/config"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,12 +18,12 @@ import (
 
 var client *http.Client
 
-func init() {
+func BuildClient(c config.Config) {
 	tr := &http.Transport{
 
-		MaxIdleConns: 5000,
+		MaxIdleConns: c.HttpClientMaxIdleConns(),
 
-		MaxIdleConnsPerHost: 3000,
+		MaxIdleConnsPerHost: c.HttpClientMaxIdleConnsPerHost(),
 	}
 
 	client = &http.Client{
@@ -82,7 +82,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	responseProxy, err := client.Do(reqProxy)
 	if responseProxy != nil {
 		defer func() {
-			io.Copy(ioutil.Discard, responseProxy.Body)
+			io.Copy(io.Discard, responseProxy.Body)
 			responseProxy.Body.Close()
 		}()
 	}

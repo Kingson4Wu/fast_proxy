@@ -33,3 +33,6 @@ serviceCallTypeConfig:
     /search_service/api/service:
       callType: 1
 
+httpClient:
+  MaxIdleConns: 5000
+  MaxIdleConnsPerHost: 3000

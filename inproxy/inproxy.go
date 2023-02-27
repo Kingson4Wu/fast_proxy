@@ -16,8 +16,9 @@ func requestProxy(res http.ResponseWriter, req *http.Request) {
 
 func NewServer(c inconfig.Config, opts ...server.Option) {
 	inconfig.Read(c)
-	proxy := server.NewServer(c, zap.DefaultLogger(), requestProxy)
-	proxy.RegisterOnShutdown(func() {
+	proxy.BuildClient(c)
+	p := server.NewServer(c, zap.DefaultLogger(), requestProxy)
+	p.RegisterOnShutdown(func() {
 		server.GetLogger().Info("clean resources on shutdown...")
 		time.Sleep(2 * time.Second)
 		server.GetLogger().Info("clean resources ok")
@@ -26,5 +27,5 @@ func NewServer(c inconfig.Config, opts ...server.Option) {
 	var options []server.Option
 	options = append(options, server.WithShutdownTimeout(5*time.Second))
 	options = append(options, opts...)
-	proxy.Start(options...)
+	p.Start(options...)
 }

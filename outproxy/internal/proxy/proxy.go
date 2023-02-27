@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	reverseProxy Func = Func(ReverseProxy)
-	forwardProxy Func = Func(ForwardProxy)
+	reverseProxy Func = ReverseProxy
+	forwardProxy Func = ForwardProxy
 )
 
 type Type int

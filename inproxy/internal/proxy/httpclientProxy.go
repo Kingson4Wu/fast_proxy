@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/Kingson4Wu/fast_proxy/common/config"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/limiter"
@@ -20,14 +21,12 @@ import (
 
 var client *http.Client
 
-func init() {
-
-	//TODO 可配置
+func BuildClient(c config.Config) {
 	tr := &http.Transport{
 
-		MaxIdleConns: 5000,
+		MaxIdleConns: c.HttpClientMaxIdleConns(),
 
-		MaxIdleConnsPerHost: 3000,
+		MaxIdleConnsPerHost: c.HttpClientMaxIdleConnsPerHost(),
 	}
 
 	client = &http.Client{

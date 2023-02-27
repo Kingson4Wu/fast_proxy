@@ -65,3 +65,11 @@ func (c *yamlConfig) GetEncryptKeyByName(name string) string {
 func (c *yamlConfig) GetTimeoutConfigByName(name string, uri string) int {
 	return viper.GetInt(fmt.Sprintf("serviceTimeoutConfig.%s.%s", name, uri))
 }
+
+func (c *yamlConfig) HttpClientMaxIdleConns() int {
+	return viper.GetInt("httpClient.MaxIdleConns")
+}
+
+func (c *yamlConfig) HttpClientMaxIdleConnsPerHost() int {
+	return viper.GetInt("httpClient.MaxIdleConnsPerHost")
+}

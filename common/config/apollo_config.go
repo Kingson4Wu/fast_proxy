@@ -127,6 +127,14 @@ func (c *apolloConfig) GetTimeoutConfigByName(name string, uri string) int {
 	return 0
 }
 
+func (c *apolloConfig) HttpClientMaxIdleConns() int {
+	return config.GetIntValue("httpClient.MaxIdleConns", 5000)
+}
+
+func (c *apolloConfig) HttpClientMaxIdleConnsPerHost() int {
+	return config.GetIntValue("httpClient.MaxIdleConnsPerHost", 3000)
+}
+
 var (
 	serviceConfigMap        map[string]ServiceConfig
 	encryptKeyMap           EncryptKeyConfig
