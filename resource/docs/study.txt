@@ -8,4 +8,4 @@
 8. common/server/server.go ：服务启动入口，使用经典的Option模式、优雅退出服务的处理；
 9.
 
-使用sdk的方式运行项目
+使用sdk的方式运行项目, 并尽量让保持扩展性，可以使用WithOption的方式自定义某些配置
