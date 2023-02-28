@@ -85,7 +85,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 
 	defer resp.Body.Close()
 
-	reqServiceName := server.Center().ClientName(resp.Request)
+	//reqServiceName := server.Center().ClientName(resp.Request)
 
 	var bodyBytes []byte
 	var err error
@@ -105,7 +105,7 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 		return nil, cerror.NewError(http.StatusInternalServerError, "illegal body")
 	}
 
-	pData, err := Decode(bodyBytes, reqServiceName)
+	pData, err := Decode(bodyBytes)
 
 	if err != nil {
 		return nil, cerror.NewError(http.StatusInternalServerError, "decrypt failure")
@@ -122,14 +122,14 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 		return nil, errors.New("get serviceConfig failure")
 	}
 
-	/** 数据拷贝, 保证当前数据不变 */
+	/** Data copy, to ensure that the current data remains unchanged */
 	sc := newSc(serviceConfig)
 	defer scPool.Put(sc)
 
 	var resultBody []byte
 	var err error
 
-	/** 加密 */
+	/** encryption */
 	if sc.EncryptEnable {
 
 		resultBody, err = encrypt.EncodeReq(bodyBytes, sc)
@@ -141,7 +141,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
 	}
 
-	/** 压缩 */
+	/** compression */
 	if sc.CompressEnable {
 
 		resultBody, err = compress.Encode(resultBody, sc.CompressAlgorithm)
@@ -152,7 +152,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 		}
 	}
 
-	/** 生成签名 */
+	/** generate signature */
 	var bodySign string
 	if sc.SignEnable {
 		bodySign, err = sign.GenerateBodySign(resultBody, sc)
@@ -164,7 +164,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
 	}
 
-	//protobuf编码
+	//protobuf encoding
 	stSend := pbPool.Get().(*protobuf.ProxyData)
 	defer pbPool.Put(stSend)
 	stSend.Sign = bodySign
@@ -193,7 +193,7 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 	return pData, nil
 }
 
-func Decode(bodyBytes []byte, serviceName string) ([]byte, error) {
+func Decode(bodyBytes []byte) ([]byte, error) {
 
 	//reData := &protobuf.ProxyRespData{}
 	reData := pbRespPool.Get().(*protobuf.ProxyRespData)
@@ -206,7 +206,7 @@ func Decode(bodyBytes []byte, serviceName string) ([]byte, error) {
 
 	bodyBytes = reData.Payload
 
-	//解压
+	//decompress
 	if reData.Compress {
 		bodyBytes, err = compress.Decode(bodyBytes, reData.CompressAlgorithm)
 
@@ -215,7 +215,7 @@ func Decode(bodyBytes []byte, serviceName string) ([]byte, error) {
 		}
 	}
 
-	/** 解密*/
+	/** decrypt*/
 	if reData.EncryptEnable {
 		bodyBytes, _ = encrypt.DecodeResp(bodyBytes, reData.EncryptKeyName)
 

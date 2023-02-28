@@ -13,7 +13,6 @@ type packHandlerImpl struct {
 func (phi packHandlerImpl) Fmap(fn func([]byte, *config.ServiceConfig) ([]byte, error)) PackHandler {
 	nb, err := fn(phi.b, phi.sc)
 	if err != nil {
-		//TODO
 	}
 
 	return packHandlerImpl{b: nb}
@@ -24,7 +23,6 @@ func NewPackHandler(b []byte, sc *config.ServiceConfig) PackHandler {
 }
 
 /* func main() {
-	// 原切片
 	b := []byte{1, 2, 3, 4}
 	f := NewPackHandler(b, nil)
 	mapperFunc1 := func(b []byte, sc *apollo.ServiceConfig) ([]byte, error) {

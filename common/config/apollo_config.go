@@ -49,7 +49,7 @@ func initApollo(appId string, namespace string, cluster string, address string) 
 		panic("init apollo failure")
 	}
 
-	log.Info("初始化Apollo配置成功", "appId", appId, "namespace", namespace, "cluster", cluster, "address", address)
+	log.Info("init apollo config successfully", "appId", appId, "namespace", namespace, "cluster", cluster, "address", address)
 
 	return &nsConfig, client
 

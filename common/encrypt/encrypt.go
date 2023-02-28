@@ -7,29 +7,29 @@ import (
 	"io"
 )
 
-func Encode(data []byte, key string) (result []byte, erro error) {
+func Encode(data []byte, key string) (result []byte, error error) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			erro = errors.New("aes Encode panic")
+			error = errors.New("aes Encode panic")
 			server.GetLogger().Errorf("Encode err:%s", err)
 		}
 	}()
 
-	result, erro = aes.AesEncrypt(data, []byte(key))
+	result, error = aes.Encrypt(data, []byte(key))
 	return
 }
 
-func Decode(data []byte, key string) (result []byte, erro error) {
+func Decode(data []byte, key string) (result []byte, error error) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			erro = errors.New("aes Decode panic")
+			error = errors.New("aes Decode panic")
 			server.GetLogger().Errorf("Decode err:%s", err)
 		}
 	}()
 
-	result, erro = aes.AesDecrypt(data, []byte(key))
+	result, error = aes.Decrypt(data, []byte(key))
 	return
 }
 

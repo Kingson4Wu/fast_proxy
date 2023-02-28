@@ -5,7 +5,7 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -25,7 +25,7 @@ func init() {
 
 			u, _ := url.Parse(callUrl)
 			req.URL = u
-			req.Host = u.Host // 必须显示修改Host，否则转发可能失败
+			req.Host = u.Host
 		},
 
 		ModifyResponse: func(resp *http.Response) error {
@@ -41,7 +41,7 @@ func init() {
 				resp.Header.Add("proxy_error_message", err.Msg)
 				resp.StatusCode = err.Code
 			}
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			resp.Body = io.NopCloser(bytes.NewBuffer(body))
 			//resp.ContentLength = int64(len(bodyBytesDecrypt))
 			resp.Header.Set("Content-Length", strconv.Itoa(len(body)))
 
@@ -70,7 +70,7 @@ func Delegate(res http.ResponseWriter, req *http.Request) {
 	}
 
 	req.ContentLength = int64(len(bodyBytes))
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	proxy.ServeHTTP(res, req)
 }

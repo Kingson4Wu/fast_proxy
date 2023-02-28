@@ -60,3 +60,11 @@ func (c *Config) GetEncryptKeyByName(name string) string {
 func (c *Config) GetTimeoutConfigByName(name string, uri string) int {
 	return 3000
 }
+
+func (c *Config) HttpClientMaxIdleConns() int {
+	return 5000
+}
+
+func (c *Config) HttpClientMaxIdleConnsPerHost() int {
+	return 3000
+}

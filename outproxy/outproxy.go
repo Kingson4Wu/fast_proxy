@@ -12,24 +12,6 @@ import (
 
 func init() {
 
-	/* ... */
-	//todo
-
-	//go build -gcflags '-m -m -l' main.go 测试环境开启逃逸分析
-	//go build命令传入-x -v命令行选项来输出详细的构建日志信息
-	//查看调度器状态 GOMAXPROCS=1 GODEBUG=schedtrace=1000
-	//设置环境变量GODEBUG='gctrace=1'让位于Go程序中的运行时在每次GC执行时输出此次GC相关的跟踪信息。
-
-	/* if err := WaitForServer(url); err != nil {
-			fmt.Fprintf(os.Stderr, "Site is down: %v\n", err)
-			os.Exit(1)
-
-		}
-			if err := WaitForServer(url); err != nil {
-	    log.Fatalf("Site is down: %v\n", err)
-	}
-	*/
-
 }
 
 func requestProxy(res http.ResponseWriter, req *http.Request) {

@@ -28,7 +28,7 @@ func BenchmarkEncodeReq(b *testing.B) {
 		EncodeReq(req)
 	}
 
-	//TODO 基准测试生成pprof文件分析
+	//TODO Benchmark test generates pprof file analysis
 }
 
 func TestEncodeReq(t *testing.T) {

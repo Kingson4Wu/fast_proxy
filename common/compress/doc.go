@@ -3,27 +3,25 @@
 package compress
 
 /**
+Go language has built-in several compression algorithms, including:
 
-Go语言内置了几种压缩算法，包括：
+gzip: gzip is a widely used compression algorithm on the web. It uses Lempel-Ziv algorithm (LZ77) and Huffman coding to compress data and can be easily used with the HTTP protocol.
 
-gzip：gzip是一种在Web上广泛使用的压缩算法。它使用Lempel-Ziv算法（LZ77）和哈夫曼编码（Huffman coding）来压缩数据，并且可以很容易地与HTTP协议一起使用。
+zlib: zlib is a compression algorithm used in many applications. It uses the DEFLATE algorithm to compress data and can also be used with the HTTP protocol.
 
-zlib：zlib是一种在许多应用程序中使用的压缩算法，它使用DEFLATE算法来压缩数据，并且也可以与HTTP协议一起使用。
+LZW: LZW algorithm is a commonly used lossless compression algorithm, often used for lossless compression of text files.
 
-lzw：LZW算法是一种常用的无损压缩算法，常用于无损压缩文本文件。
+bzip2: bzip2 is an efficient compression algorithm that is more efficient than gzip and zlib but slower. It is suitable for compressing large files.
 
-bzip2：bzip2是一种高效的压缩算法，比gzip和zlib更高效，但是速度较慢。它适用于对大文件进行压缩。
+snappy: Snappy is a compression algorithm developed by Google. It is fast but has a relatively low compression ratio and is suitable for scenarios that require fast compression and decompression of data.
 
-snappy：Snappy是Google开发的一种压缩算法，速度快，但压缩比相对较低，适用于需要快速压缩和解压数据的场景。
+The specific choice of compression algorithm depends on the application scenario and requirements. For example, if it needs to be used in a web application, gzip or zlib may be a better choice; if it needs to compress large files, bzip2 can be chosen; if it needs fast compression and decompression of data, snappy can be considered.
 
-具体选用哪种压缩算法，需要根据应用场景和需求来确定。例如，如果需要在Web应用中使用，gzip或zlib可能是更好的选择；如果需要对大文件进行压缩，可以选择bzip2；如果需要快速压缩和解压数据，可以考虑使用snappy。
+For compressing and decompressing large files, it is recommended to use bzip2 or LZ4 algorithm.
 
+bzip2 is an efficient compression algorithm with a high compression ratio, suitable for compressing large files. Its disadvantage is that the compression speed is relatively slow, but it is suitable for scenarios that require long-term storage or transferring files to remote areas.
 
-对于大文件的压缩和解压，建议使用bzip2或者LZ4算法。
+LZ4 is a very fast compression algorithm with fast compression and decompression speeds and a relatively high compression ratio. It is suitable for compressing and decompressing large files. Its disadvantage is that the compression ratio is relatively low, making it unsuitable for compressing files that require long-term storage.
 
-bzip2是一种高效的压缩算法，压缩比较高，适合对大文件进行压缩。它的缺点是压缩速度较慢，但是对于需要长期存储或者需要将文件传输到远程地区的场景下，使用bzip2压缩是很合适的选择。
-
-LZ4是一种非常快速的压缩算法，压缩和解压速度都非常快，压缩比较高。适合对大文件进行压缩和解压。它的缺点是压缩比相对较低，不适合对需要长期存储的文件进行压缩。
-
-具体选择哪种算法，需要根据文件的大小和压缩效率来决定。一般来说，如果文件大小超过几百兆甚至几个G，可以考虑使用bzip2进行压缩；如果文件大小在几十兆以下，可以考虑使用LZ4进行压缩。
+The specific choice of algorithm depends on the size of the file and the compression efficiency. Generally, if the file size exceeds several hundred megabytes or even several gigabytes, bzip2 can be considered for compression; if the file size is below several tens of megabytes, LZ4 can be considered for compression.
 */

@@ -35,17 +35,17 @@ func BuildClient(c config.Config) {
 	}
 }
 
-// DoProxy /** 转发请求*/
+// DoProxy /** forward request */
 func DoProxy(w http.ResponseWriter, r *http.Request) {
 
-	//参数校验
+	//Parameter check
 	if !strings.HasPrefix(r.RequestURI, inconfig.Get().ServerContextPath()) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	/** 鉴权  判断uri是否有权限等 */
-	//如何防止伪造服务名(签名验证通过即认为是)
+	/** Authentication to determine whether the uri has authority, etc. */
+	//How to prevent forgery of service name (signature verification is considered to be)
 	clientServiceName := server.Center().ClientName(r)
 	requestPath := servicediscovery.RealRequestUri(r.RequestURI)
 	if !inconfig.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
@@ -58,10 +58,10 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyBytes, pb, errn := pack.DecodeReq(r)
+	bodyBytes, pb, error := pack.DecodeReq(r)
 	defer pack.PbPool.Put(pb)
-	if errn != nil {
-		writeErrorMessage(w, errn.Code, errn.Msg)
+	if error != nil {
+		writeErrorMessage(w, error.Code, error.Msg)
 		return
 	}
 
@@ -72,10 +72,10 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 创建转发用的请求
+	// Create a request for forwarding
 	reqProxy, err := http.NewRequest(r.Method, callUrl, bytes.NewReader(bodyBytes))
 	if err != nil {
-		// 响应状态码
+		// response status code
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
@@ -103,12 +103,12 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 转发请求的 Header
+	// Header of forwarding request
 	for k, v := range r.Header {
 		reqProxy.Header.Set(k, v[0])
 	}
 
-	// 发起请求
+	// make a request
 	responseProxy, err := client.Do(reqProxy)
 	if responseProxy != nil {
 		defer func() {
@@ -117,7 +117,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	if err != nil {
-		server.GetLogger().Error("转发请求发生错误", zap.Any("req forward err", err))
+		server.GetLogger().Error("Error forwarding request", zap.Any("req forward err", err))
 
 		if errors.Is(err, context.DeadlineExceeded) {
 			w.WriteHeader(http.StatusGatewayTimeout)
@@ -128,7 +128,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 转发响应的 Header
+	// Header of the forwarded response
 	for k, v := range responseProxy.Header {
 		if strings.EqualFold(k, "Content-Length") {
 			continue
@@ -136,18 +136,18 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(k, v[0])
 	}
 
-	body, errn := pack.EncodeResp(responseProxy, pb)
-	if errn != nil {
-		writeErrorMessage(w, errn.Code, errn.Msg)
+	body, error := pack.EncodeResp(responseProxy, pb)
+	if error != nil {
+		writeErrorMessage(w, error.Code, error.Msg)
 		return
 	}
 
 	resProxyBody := io.NopCloser(bytes.NewBuffer(body))
-	defer resProxyBody.Close() // 延时关闭
+	defer resProxyBody.Close()
 
-	// 响应状态码
+	// response status code
 	w.WriteHeader(responseProxy.StatusCode)
-	// 复制转发的响应Body到响应Body
+	// Copy the forwarded response Body to the response Body
 	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	io.Copy(w, resProxyBody)
 

@@ -26,7 +26,7 @@ func TestEncryptByAesWithKey(t *testing.T) {
 	}
 }
 
-//go test ./... 运行当前目录及所有子目录下的测试用例
+//go test ./... Run the test cases in the current directory and all subdirectories
 
 func TestDecryptByAesWithKey(t *testing.T) {
 	var (

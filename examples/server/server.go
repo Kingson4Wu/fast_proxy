@@ -19,7 +19,7 @@ func main() {
 	mux2.HandleFunc("/api/service", searchHandler)
 	go service(8102, "search_service", mux2)
 
-	// 防止程序退出
+	// prevent program from exiting
 	select {}
 
 }

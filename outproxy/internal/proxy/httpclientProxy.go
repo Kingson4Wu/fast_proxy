@@ -32,23 +32,20 @@ func BuildClient(c config.Config) {
 	}
 }
 
-// DoProxy /** 转发请求*/
+// DoProxy /** forward request */
 func DoProxy(w http.ResponseWriter, r *http.Request) {
 
-	bodyBytes, errn := pack.EncodeReq(r)
-	if errn != nil {
-		writeErrorMessage(w, errn.Code, errn.Msg)
+	bodyBytes, error := pack.EncodeReq(r)
+	if error != nil {
+		writeErrorMessage(w, error.Code, error.Msg)
 		return
 	}
 
-	// 转发的URL
 	reqURL := outconfig.Get().ForwardAddress() + r.RequestURI
 
-	// 创建转发用的请求
 	reqProxy, err := http.NewRequest(r.Method, reqURL, bytes.NewReader(bodyBytes))
 	if err != nil {
-		log.Println("创建转发请求发生错误")
-		// 响应状态码
+		log.Println("Error creating forward request")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
@@ -73,12 +70,12 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 转发请求的 Header
+	// Header of forwarding request
 	for k, v := range r.Header {
 		reqProxy.Header.Set(k, v[0])
 	}
 
-	// 发起请求
+	// make a request
 	responseProxy, err := client.Do(reqProxy)
 	if responseProxy != nil {
 		defer func() {
@@ -87,7 +84,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	if err != nil {
-		server.GetLogger().Error("转发请求发生错误", "req forward err", err)
+		server.GetLogger().Error("Error forwarding request", "req forward err", err)
 
 		if errors.Is(err, context.DeadlineExceeded) {
 			w.WriteHeader(http.StatusGatewayTimeout)
@@ -98,7 +95,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 转发响应的 Header
+	// Header of the forwarded response
 	for k, v := range responseProxy.Header {
 		/*if strings.EqualFold(k, "Content-Length") {
 			continue
@@ -114,8 +111,8 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resProxyBody := io.NopCloser(bytes.NewBuffer(body))
-		defer resProxyBody.Close() // 延时关闭
-		// 复制转发的响应Body到响应Body
+		defer resProxyBody.Close() // Delay off
+		// Copy the forwarded response Body to the response Body
 		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 		io.Copy(w, resProxyBody)
 	} else {
@@ -123,7 +120,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(responseProxy.StatusCode)
 	}
 
-	// 响应状态码
+	// response status code
 	//w.WriteHeader(responseProxy.StatusCode)
 
 }

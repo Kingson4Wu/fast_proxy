@@ -129,7 +129,10 @@ func (p *Proxy) Start(opts ...Option) {
 	p.logger.Info("server start ...", zap.Int("port", p.port), zap.Int("pid", pid))
 
 	intranetIp := network.GetIntranetIp()
-	stop := p.sc.Register(p.c.ServerName(), intranetIp, p.c.ServerPort())
+	var stop chan bool
+	if p.sc != nil {
+		stop = p.sc.Register(p.c.ServerName(), intranetIp, p.c.ServerPort())
+	}
 
 	err := p.svr.ListenAndServe()
 	if err != nil {

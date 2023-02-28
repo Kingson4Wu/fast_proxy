@@ -40,7 +40,7 @@ func DecodeReq(req *http.Request) ([]byte, *protobuf.ProxyData, *cerror.Err) {
 	defer pool.PutDataBufferChunk(b)
 
 	if b == nil {
-		bodyBytes, err = ioutil.ReadAll(req.Body)
+		bodyBytes, err = io.ReadAll(req.Body)
 	} else {
 		bf := bytes.NewBuffer(*b)
 		bf.Reset()
@@ -93,7 +93,6 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 
 	var resultBody []byte
 	var err error
-	/** 加密 */
 	if reData.EncryptEnable {
 
 		resultBody, err = encrypt.EncodeResp(bodyBytes, reData.EncryptKeyName)
@@ -105,7 +104,6 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 
 	}
 
-	/** 压缩 */
 	if reData.Compress {
 
 		resultBody, err = compress.Encode(resultBody, reData.CompressAlgorithm)
@@ -116,7 +114,6 @@ func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 		}
 	}
 
-	/** protobuf编码 */
 	stSend := pbRespPool.Get().(*protobuf.ProxyRespData)
 	defer pbRespPool.Put(stSend)
 	stSend.Compress = reData.Compress
@@ -145,7 +142,6 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 
 	bodyBytes = reData.Payload
 
-	/** 签名验证 */
 	if reData.SignEnable {
 
 		bodySignature, err := sign.GenerateBodySignWithName(bodyBytes, reData.SignKeyName)
@@ -161,7 +157,6 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 	}
 
 	if reData.Compress {
-		//解压
 		bodyBytes, err = compress.Decode(bodyBytes, reData.CompressAlgorithm)
 
 		if err != nil {
@@ -171,7 +166,6 @@ func Decode(bodyBytes []byte) ([]byte, *protobuf.ProxyData, error) {
 
 	if reData.EncryptEnable {
 
-		/** 解密*/
 		bodyBytes, err = encrypt.DecodeReq(bodyBytes, reData.EncryptKeyName)
 		if err != nil {
 			return nil, nil, errors.New("encrypt decode failure")
