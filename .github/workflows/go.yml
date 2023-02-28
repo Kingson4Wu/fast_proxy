@@ -16,10 +16,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.19
 
       - name: Build
-        run: go build -v
+        run: go build -o in-proxy ./examples/inproxy
 
       - name: Unit Test
         run: go test -count 1 -v ./...
