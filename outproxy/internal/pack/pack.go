@@ -85,8 +85,6 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 
 	defer resp.Body.Close()
 
-	//reqServiceName := server.Center().ClientName(resp.Request)
-
 	var bodyBytes []byte
 	var err error
 	b := pool.GetDataBufferChunk(resp.ContentLength)
@@ -114,10 +112,102 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 	return pData, nil
 }
 
+//-------
+
+type Middleware func([]byte, *config.ServiceConfig) ([]byte, error)
+
+func ApplyMiddlewares(input []byte, serviceConfig *config.ServiceConfig, middlewares ...Middleware) ([]byte, error) {
+	var err error
+	output := input
+	for _, middleware := range middlewares {
+		output, err = middleware(output, serviceConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return output, nil
+}
+
+func Encrypt(input []byte, serviceConfig *config.ServiceConfig) ([]byte, error) {
+	if serviceConfig.EncryptEnable {
+		return encrypt.EncodeReq(input, serviceConfig)
+	}
+	return input, nil
+}
+
+func Compress(input []byte, serviceConfig *config.ServiceConfig) ([]byte, error) {
+	if serviceConfig.CompressEnable {
+		return compress.Encode(input, serviceConfig.CompressAlgorithm)
+	}
+	return input, nil
+}
+
+func ProtobufEncode(input []byte, sc *config.ServiceConfig) ([]byte, error) {
+	var bodySign string
+	var err error
+	if sc.SignEnable {
+		bodySign, err = sign.GenerateBodySign(input, sc)
+		if err != nil {
+			server.GetLogger().Error("%s", err)
+			return nil, errors.New("sign failure")
+		}
+	}
+
+	stSend := pbPool.Get().(*protobuf.ProxyData)
+	defer pbPool.Put(stSend)
+	stSend.Sign = bodySign
+	stSend.Compress = sc.CompressEnable
+	stSend.Payload = input
+	stSend.SignEnable = sc.SignEnable
+	stSend.SignKeyName = sc.SignKeyName
+	stSend.EncryptEnable = sc.EncryptEnable
+	stSend.EncryptKeyName = sc.EncryptKeyName
+	stSend.CompressAlgorithm = sc.CompressAlgorithm
+
+	pData, err := proto.Marshal(stSend)
+	if err != nil {
+		return nil, errors.New("protobuf encode failure")
+	}
+	return pData, nil
+}
+
+type UnpackMiddleware func([]byte, *protobuf.ProxyRespData) ([]byte, error)
+
+func ApplyUnpackMiddlewares(input []byte, proxyData *protobuf.ProxyRespData, middlewares ...UnpackMiddleware) ([]byte, error) {
+	var err error
+	output := input
+	for _, middleware := range middlewares {
+		output, err = middleware(output, proxyData)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return output, nil
+}
+
+func Decrypt(input []byte, proxyData *protobuf.ProxyRespData) ([]byte, error) {
+	if proxyData.EncryptEnable {
+		return encrypt.DecodeResp(input, proxyData.EncryptKeyName)
+	}
+	return input, nil
+}
+
+func Decompress(input []byte, proxyData *protobuf.ProxyRespData) ([]byte, error) {
+	if proxyData.Compress {
+		input, err := compress.Decode(input, proxyData.CompressAlgorithm)
+
+		if err != nil {
+			return nil, errors.New("compress decode failure")
+		}
+		return input, nil
+	}
+	return input, nil
+}
+
+//----------
+
 func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
-
 	serviceConfig := outconfig.Get().GetServiceConfig(serviceName)
-
 	if serviceConfig == nil {
 		return nil, errors.New("get serviceConfig failure")
 	}
@@ -126,76 +216,17 @@ func Encode(bodyBytes []byte, serviceName string) ([]byte, error) {
 	sc := newSc(serviceConfig)
 	defer scPool.Put(sc)
 
-	var resultBody []byte
-	var err error
+	middlewares := []Middleware{Encrypt, Compress, ProtobufEncode}
 
-	/** encryption */
-	if sc.EncryptEnable {
-
-		resultBody, err = encrypt.EncodeReq(bodyBytes, sc)
-
-		if err != nil {
-			server.GetLogger().Errorf("%s", err)
-			return nil, errors.New("encrypt failure")
-		}
-
-	}
-
-	/** compression */
-	if sc.CompressEnable {
-
-		resultBody, err = compress.Encode(resultBody, sc.CompressAlgorithm)
-		if err != nil {
-			//logger.GetLogger().Error("")
-			//return nil, fmt.Errorf("parsing %s as HTML: %v", url,err)
-			return nil, errors.New("compress failure")
-		}
-	}
-
-	/** generate signature */
-	var bodySign string
-	if sc.SignEnable {
-		bodySign, err = sign.GenerateBodySign(resultBody, sc)
-
-		if err != nil {
-			server.GetLogger().Error("%s", err)
-			return nil, errors.New("sign failure")
-		}
-
-	}
-
-	//protobuf encoding
-	stSend := pbPool.Get().(*protobuf.ProxyData)
-	defer pbPool.Put(stSend)
-	stSend.Sign = bodySign
-	stSend.Compress = sc.CompressEnable
-	stSend.Payload = resultBody
-	stSend.SignEnable = sc.SignEnable
-	stSend.SignKeyName = sc.SignKeyName
-	stSend.EncryptEnable = sc.EncryptEnable
-	stSend.EncryptKeyName = sc.EncryptKeyName
-	stSend.CompressAlgorithm = sc.CompressAlgorithm
-
-	/* stSend := &protobuf.ProxyData{
-		Sign:           bodySign,
-		Compress:       sc.CompressEnable,
-		Payload:        resultBody,
-		SignEnable:     sc.SignEnable,
-		SignKeyName:    sc.SignKeyName,
-		EncryptEnable:  sc.EncryptEnable,
-		EncryptKeyName: sc.EncryptKeyName,
-	} */
-	pData, err := proto.Marshal(stSend)
+	result, err := ApplyMiddlewares(bodyBytes, sc, middlewares...)
 	if err != nil {
-		return nil, errors.New("protobuf encode failure")
+		return nil, err
 	}
-
-	return pData, nil
+	return result, nil
 }
 
 func Decode(bodyBytes []byte) ([]byte, error) {
 
-	//reData := &protobuf.ProxyRespData{}
 	reData := pbRespPool.Get().(*protobuf.ProxyRespData)
 	defer pbRespPool.Put(reData)
 	err := proto.Unmarshal(bodyBytes, reData)
@@ -206,20 +237,11 @@ func Decode(bodyBytes []byte) ([]byte, error) {
 
 	bodyBytes = reData.Payload
 
-	//decompress
-	if reData.Compress {
-		bodyBytes, err = compress.Decode(bodyBytes, reData.CompressAlgorithm)
+	middlewares := []UnpackMiddleware{Decompress, Decrypt}
 
-		if err != nil {
-			return nil, errors.New("compress decode failure")
-		}
+	result, err := ApplyUnpackMiddlewares(bodyBytes, reData, middlewares...)
+	if err != nil {
+		return nil, err
 	}
-
-	/** decrypt*/
-	if reData.EncryptEnable {
-		bodyBytes, _ = encrypt.DecodeResp(bodyBytes, reData.EncryptKeyName)
-
-	}
-
-	return bodyBytes, nil
+	return result, nil
 }

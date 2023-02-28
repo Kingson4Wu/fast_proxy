@@ -11,7 +11,6 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/sign"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/encrypt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync"
 
@@ -69,7 +68,7 @@ func EncodeResp(resp *http.Response, reData *protobuf.ProxyData) ([]byte, *cerro
 	b := pool.GetDataBufferChunk(resp.ContentLength)
 	defer pool.PutDataBufferChunk(b)
 	if b == nil {
-		bodyBytes, err = ioutil.ReadAll(resp.Body)
+		bodyBytes, err = io.ReadAll(resp.Body)
 	} else {
 		bf := bytes.NewBuffer(*b)
 		bf.Reset()
