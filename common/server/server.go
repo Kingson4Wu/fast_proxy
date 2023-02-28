@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/config"
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/network"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"syscall"
@@ -144,4 +146,11 @@ func (p *Proxy) Start(opts ...Option) {
 	}
 	p.wg.Wait()
 	p.logger.Info("proxy shutdown ok")
+}
+
+func init() {
+	// print banner
+	path, _ := filepath.Abs("resource/banner.txt")
+	banner, _ := os.ReadFile(path)
+	fmt.Println(string(banner))
 }
