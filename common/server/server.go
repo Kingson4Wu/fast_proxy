@@ -56,6 +56,12 @@ func WithServiceCenter(sc *servicediscovery.ServiceCenter) Option {
 	}
 }
 
+func WithLogger(logger logger.Logger) Option {
+	return func(p *Proxy) {
+		p.logger = logger
+	}
+}
+
 func NewServer(config config.Config, logger logger.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
 
 	http.HandleFunc("/", proxyHandler)

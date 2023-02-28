@@ -13,10 +13,6 @@ import (
 	"time"
 )
 
-func init() {
-
-}
-
 func requestProxy(res http.ResponseWriter, req *http.Request) {
 
 	proxyType := proxy.FORWARD
@@ -34,8 +30,6 @@ func NewServer(c outconfig.Config, opts ...server.Option) {
 	p := server.NewServer(c, zap.DefaultLogger(), requestProxy)
 	p.RegisterOnShutdown(func() {
 		server.GetLogger().Info("clean resources on shutdown...")
-		time.Sleep(2 * time.Second)
-		server.GetLogger().Info("clean resources ok")
 	})
 
 	var options []server.Option
