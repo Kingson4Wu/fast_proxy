@@ -1,2 +1,11 @@
-1. outproxy/internal/pack/pack.go:174 middleware pattern
+1. outproxy/internal/pack/pack.go ： Middleware模式的运用，会让你的代码更加优雅；
+2. common/logger/logger.go ： logger抽象技巧，支持后续使用时传入自定义的logger，可以使用logrus、zap、zerolog、seelog等，默认使用zap；
+3. common/compress/compress.go ： 数据压缩，目前支持snappy和gzip；
+4. common/config/config.go ： 配置抽象，目前内置yaml和apollo，当然另外自定义；
+5. common/encrypt/encrypt.go ： 数据加解密，目前支持aes算法；
+6. common/pool/bytes_pool.go ： sync.Pool的使用，复用内存，提升性能；
+7. common/proto/proxy_payload.proto ： 使用protobuf协议传输数据（性能好/效率高）；
+8. common/server/server.go ：服务启动入口，使用经典的Option模式、优雅退出服务的处理；
+9.
 
+使用sdk的方式运行项目

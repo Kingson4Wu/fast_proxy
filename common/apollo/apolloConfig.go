@@ -8,8 +8,6 @@ import (
 	"github.com/apolloconfig/agollo/v4/env/config"
 )
 
-var c *ApolloConfig
-
 type ApolloConfig struct {
 	Log logger.Logger
 	agollo.Client
@@ -43,8 +41,4 @@ func InitApolloClient(appId string, namespace string, cluster string, address st
 	}
 
 	return &client
-}
-
-func init() {
-
 }
