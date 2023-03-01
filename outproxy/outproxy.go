@@ -1,6 +1,7 @@
 package outproxy
 
 import (
+	"embed"
 	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/logger/zap"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
@@ -8,10 +9,11 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
-	"path/filepath"
 	"time"
 )
+
+//go:embed *
+var ConfigFs embed.FS
 
 func requestProxy(res http.ResponseWriter, req *http.Request) {
 
@@ -39,8 +41,8 @@ func NewServer(c outconfig.Config, opts ...server.Option) {
 }
 
 func init() {
-	// print banner
-	path, _ := filepath.Abs("resource/out_proxy_banner.txt")
-	banner, _ := os.ReadFile(path)
-	fmt.Println(string(banner))
+	configBytes, err := ConfigFs.ReadFile("banner.txt")
+	if err == nil {
+		fmt.Println(string(configBytes))
+	}
 }
