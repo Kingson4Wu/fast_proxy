@@ -1,29 +1,26 @@
+最近由于特定需求，我创建了一个代理项目，该项目可以对进出流量进行加密解密等操作。
+虽然该项目在实际应用场景中可能使用不多，但我通过这个项目加深了自己在 Golang 编程方面的能力。
+作为初学者，总体来说代码比较浅薄，但希望还是能大家提供一些帮助以及接收一些反馈，持续优化。
+在项目中，我将我的学习成果应用于实践，并将总结如下：
 
-最近由于某些原因，需要一个对进出流量做加解密等操作的代理，于是有了这个项目。
-项目发挥用途的实际场景可能并不多，不过我借此契机加深对golang的编码能力。
-项目中我会把我所学习到的东西进行运用，并总结到下面。
-作为初学者，总体来说代码比较浅薄，但希望还是能大家提供一些帮助以及接收一些反馈。
+1. 在 outproxy/internal/pack/pack.go 文件中，使用 Middleware 模式，可以让代码更加优雅。
+2. 在 common/logger/logger.go 文件中，使用 logger 抽象技巧，支持后续使用时传入自定义的 logger，例如 logrus、zap、zerolog 和 seelog。默认使用 zap。
+3. 在 common/compress/compress.go 文件中，使用数据压缩技术，目前支持 snappy 和 gzip。
+4. 在 common/config/config.go 文件中，使用配置抽象技巧，目前内置了 YAML 和 Apollo，当然也可以自定义。
+5. 在 common/encrypt/encrypt.go 文件中，使用数据加解密技术，目前支持 AES 算法。
+6. 在 common/pool/bytes_pool.go 文件中，使用 sync.Pool 技术，可以复用内存，提高代码性能。
+7. 在 common/proto/proxy_payload.proto 文件中，使用 protobuf 协议传输数据，性能和效率都非常高。
+8. 在 common/server/server.go 文件中，使用经典的 Option 模式和优雅退出服务的处理，作为服务启动入口。
+9. 在 inproxy/inconfig/config.go 和 outproxy/outconfig/config.go 文件中，可以扩展配置属性。
+10. 在 inproxy/internal/limiter/LimitManager.go 文件中，使用限流控制技术。
+11. 在 inproxy/internal/proxy/httpclientProxy.go 文件中，使用 httpclient 技术，用于转发请求，是项目的核心逻辑。
+12. 使用 GoConvey 和 Gomonkey 编写测试用例。
+13. 使用 Benchmark 对代码性能进行测试。
+14. 使用 fuzzy 测试技术发现问题，并使用 go test race 进行竞态分析。
+15. 使用 escape_analysis.sh 工具对项目进行逃逸分析，以使内存尽量在栈上进行分配。
 
-项目地址：
-项目使用sdk的方式运行项目, 并尽量让保持扩展性，可以使用WithOption的方式自定义某些配置。
-使用示例：
 
-1. outproxy/internal/pack/pack.go ： Middleware模式的运用，会让你的代码更加优雅；
-2. common/logger/logger.go ： logger抽象技巧，支持后续使用时传入自定义的logger，可以使用logrus、zap、zerolog、seelog等，默认使用zap；
-3. common/compress/compress.go ： 数据压缩，目前支持snappy和gzip；
-4. common/config/config.go ： 配置抽象，目前内置yaml和apollo，当然另外自定义；
-5. common/encrypt/encrypt.go ： 数据加解密，目前支持aes算法；
-6. common/pool/bytes_pool.go ： sync.Pool的使用，复用内存，提升性能；
-7. common/proto/proxy_payload.proto ： 使用protobuf协议传输数据（性能好/效率高）；
-8. common/server/server.go ：服务启动入口，使用经典的Option模式、优雅退出服务的处理；
-9. inproxy/inconfig/config.go、 outproxy/outconfig/config.go ：扩展配置熟悉的技巧；
-10. inproxy/internal/limiter/LimitManager.go ： 限流控制
-11. inproxy/internal/proxy/httpclientProxy.go ： httpclient使用，用于转发请求，核心逻辑；
-12. 使用GoConvey、Gomonkey编写测试用例；
-13. 使用Benchmark测试代码性能；
-14. 使用fuzzy 测试发现问题、使用go test race 进行竞态分析；
-15. 使用escape_analysis.sh对项目进行逃逸分析，使内存尽量在栈上进行分配；
-
-推荐书籍：《Go语言精进之路》
+PS: 强烈推荐一本书籍：《Go 语言精进之路》。该书可以帮助你快速入门 Golang，
+并提供许多实用的技巧和经验，是学习 Golang 的好帮手。
 
 
