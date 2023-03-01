@@ -1,0 +1,37 @@
+proxy:
+  forwardAddress: http://127.0.0.1:8033/inProxy
+
+application:
+  port : 8034
+  name : out_proxy
+
+rpc:
+  serviceHeaderName: C_ServiceName
+
+serviceConfig:
+  song_service:
+    encryptKeyName: encrypt.key.room.v2
+    signKeyName: sign.key.room.v1
+    encryptEnable: true
+    signEnable: true
+    compressEnable: true
+    compressAlgorithm: 1
+  chat_service:
+    encryptKeyName: encrypt.key.room.v2
+    signKeyName: sign.key.room.v1
+    encryptEnable: true
+    signEnable: true
+    compressEnable: true
+    compressAlgorithm: 0
+
+signKeyConfig:
+  sign.key.room.v1: abcd
+  sign.key.room.v2: abcd
+
+encryptKeyConfig:
+  encrypt.key.room.v1: ABCDABCDABCDABCDW
+  encrypt.key.room.v2: ABCDABCDABCDABCD
+
+httpClient:
+  MaxIdleConns: 5000
+  MaxIdleConnsPerHost: 3000

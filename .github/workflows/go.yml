@@ -22,7 +22,8 @@ jobs:
         run: go build -v -o in-proxy ./examples/inproxy && go build -v -o out-proxy ./examples/outproxy
 
       - name: Unit Test
-        run: go test -count 1 -v ./...
+        run: go test -count 1 -v ./... -gcflags "all=-N -l"
+        #run: go test -count 1 -v ./...
 
       - name: Benchmark Test
         working-directory: ./benchmark
