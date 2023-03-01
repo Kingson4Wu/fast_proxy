@@ -1,6 +1,11 @@
 最近由于特定需求，我创建了一个代理项目，该项目可以对进出流量进行加密解密等操作。
 虽然该项目在实际应用场景中可能使用不多，但我通过这个项目加深了自己在 Golang 编程方面的能力。
 作为初学者，总体来说代码比较浅薄，但希望还是能大家提供一些帮助以及接收一些反馈，持续优化。
+
+项目地址：https://github.com/Kingson4Wu/fast_proxy
+项目使用sdk的方式运行项目, 并尽量保持扩展性，可以使用WithOption的方式自定义某些配置。
+使用示例：https://github.com/Kingson4Wu/fast_proxy_examples
+
 在项目中，我将我的学习成果应用于实践，并将总结如下：
 
 1. 在 outproxy/internal/pack/pack.go 文件中，使用 Middleware 模式，可以让代码更加优雅。
