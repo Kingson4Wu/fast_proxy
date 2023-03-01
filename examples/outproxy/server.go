@@ -2,10 +2,12 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/outproxy"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
+	"os"
 )
 
 //go:embed *
@@ -15,7 +17,8 @@ func main() {
 
 	configBytes, err := ConfigFs.ReadFile("config.yaml")
 	if err != nil {
-		panic(err.Error())
+		fmt.Printf("%s", err)
+		os.Exit(1)
 	}
 
 	c := outconfig.LoadYamlConfig(configBytes)
