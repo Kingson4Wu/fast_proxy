@@ -19,7 +19,7 @@ jobs:
           go-version: 1.19
 
       - name: Build
-        run: go build -o in-proxy ./examples/inproxy
+        run: go build -v -o in-proxy ./examples/inproxy && go build -v -o out-proxy ./examples/outproxy
 
       - name: Unit Test
         run: go test -count 1 -v ./...

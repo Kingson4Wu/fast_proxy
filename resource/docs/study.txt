@@ -1,3 +1,13 @@
+
+最近由于某些原因，需要一个对进出流量做加解密等操作的代理，于是有了这个项目。
+项目发挥用途的实际场景可能并不多，不过我借此契机加深对golang的编码能力。
+项目中我会把我所学习到的东西进行运用，并总结到下面。
+作为初学者，总体来说代码比较浅薄，但希望还是能大家提供一些帮助以及接收一些反馈。
+
+项目地址：
+项目使用sdk的方式运行项目, 并尽量让保持扩展性，可以使用WithOption的方式自定义某些配置。
+使用示例：
+
 1. outproxy/internal/pack/pack.go ： Middleware模式的运用，会让你的代码更加优雅；
 2. common/logger/logger.go ： logger抽象技巧，支持后续使用时传入自定义的logger，可以使用logrus、zap、zerolog、seelog等，默认使用zap；
 3. common/compress/compress.go ： 数据压缩，目前支持snappy和gzip；
@@ -6,6 +16,8 @@
 6. common/pool/bytes_pool.go ： sync.Pool的使用，复用内存，提升性能；
 7. common/proto/proxy_payload.proto ： 使用protobuf协议传输数据（性能好/效率高）；
 8. common/server/server.go ：服务启动入口，使用经典的Option模式、优雅退出服务的处理；
-9.
+9. inproxy/inconfig/config.go、 outproxy/outconfig/config.go ：扩展配置熟悉的技巧；
+10. inproxy/internal/limiter/LimitManager.go ： 限流控制
+11. inproxy/internal/proxy/httpclientProxy.go ： httpclient使用，用于转发请求，核心逻辑；
 
-使用sdk的方式运行项目, 并尽量让保持扩展性，可以使用WithOption的方式自定义某些配置
+

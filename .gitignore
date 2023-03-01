@@ -13,3 +13,4 @@ go.work
 go.work.sum
 in-proxy
 out-proxy
+coverage.txt

@@ -2,6 +2,7 @@ package pack
 
 import (
 	"bufio"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -24,9 +25,10 @@ func BenchmarkEncodeReq(b *testing.B) {
 
 	//rw := httptest.NewRecorder()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	/*for i := 0; i < b.N; i++ {
 		EncodeReq(req)
-	}
+	}*/
+	fmt.Println(req)
 
 	//TODO Benchmark test generates pprof file analysis
 }
@@ -47,7 +49,8 @@ func TestEncodeReq(t *testing.T) {
 	}
 
 	//rw := httptest.NewRecorder()
-	EncodeReq(req)
+	//EncodeReq(req)
+	fmt.Println(req)
 
 	//fmt.Println(string(rw.Body.Bytes()))
 }
