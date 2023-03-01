@@ -21,7 +21,7 @@ Key features:
 
 ## Quick Start
 
-**1. embedded usage:** see [examples](https://github.com/kingson4wu/fast_proxy/tree/main/examples)
+**1. embedded usage:** see [examples](https://github.com/kingson4wu/fast_proxy/tree/main/examples) or [more](https://github.com/Kingson4Wu/fast_proxy_examples)
 
 **2. command line usage:**
 
