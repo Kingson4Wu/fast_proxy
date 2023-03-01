@@ -2,7 +2,6 @@ package pack
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
@@ -16,6 +15,9 @@ import (
 )
 
 func BenchmarkEncodeReq(b *testing.B) {
+
+	c := runBeforeMock()
+	defer c()
 
 	httpPostReq :=
 		"POST /service_name/thrift/service HTTP/1.0\r\n" +
@@ -32,35 +34,17 @@ func BenchmarkEncodeReq(b *testing.B) {
 
 	//rw := httptest.NewRecorder()
 	b.ResetTimer()
-	/*for i := 0; i < b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		EncodeReq(req)
-	}*/
-	fmt.Println(req)
+	}
 
 	//TODO Benchmark test generates pprof file analysis
 }
 
 func TestEncodeReq(t *testing.T) {
 
-	//-gcflags "all=-N -l"
-	//mock a function
-	mockSc := &servicediscovery.ServiceCenter{}
-	patchSc := gomonkey.ApplyFunc(server.Center, func() *servicediscovery.ServiceCenter {
-		return mockSc
-	})
-	defer patchSc.Reset()
-
-	//mock a method
-	patchClientName := gomonkey.ApplyMethod(reflect.TypeOf(mockSc), "ClientName", func(_ *servicediscovery.ServiceCenter, req *http.Request) string {
-		return req.Header.Get("C_service_name")
-	})
-	defer patchClientName.Reset()
-
-	mockConfig := test.GetOutConfig()
-	patchConfig := gomonkey.ApplyFunc(outconfig.Get, func() outconfig.Config {
-		return mockConfig
-	})
-	defer patchConfig.Reset()
+	c := runBeforeMock()
+	defer c()
 
 	httpPostReq :=
 		"POST /service_name/thrift/service HTTP/1.0\r\n" +
@@ -79,4 +63,29 @@ func TestEncodeReq(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(result, ShouldNotBeNil)
 	})
+}
+
+func runBeforeMock() func() {
+	//-gcflags "all=-N -l"
+	//mock a function
+	mockSc := &servicediscovery.ServiceCenter{}
+	patchSc := gomonkey.ApplyFunc(server.Center, func() *servicediscovery.ServiceCenter {
+		return mockSc
+	})
+
+	//mock a method
+	patchClientName := gomonkey.ApplyMethod(reflect.TypeOf(mockSc), "ClientName", func(_ *servicediscovery.ServiceCenter, req *http.Request) string {
+		return req.Header.Get("C_service_name")
+	})
+
+	mockConfig := test.GetOutConfig()
+	patchConfig := gomonkey.ApplyFunc(outconfig.Get, func() outconfig.Config {
+		return mockConfig
+	})
+
+	return func() {
+		patchSc.Reset()
+		patchClientName.Reset()
+		patchConfig.Reset()
+	}
 }
