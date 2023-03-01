@@ -2,12 +2,18 @@ package pack
 
 import (
 	"bufio"
+	"bytes"
+	"github.com/Kingson4Wu/fast_proxy/common/compress"
+	"github.com/Kingson4Wu/fast_proxy/common/encrypt"
+	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"github.com/Kingson4Wu/fast_proxy/test"
 	"github.com/agiledragon/gomonkey"
 	. "github.com/smartystreets/goconvey/convey"
+	"google.golang.org/protobuf/proto"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -59,7 +65,7 @@ func TestEncodeReq(t *testing.T) {
 	}
 
 	result, err := EncodeReq(req)
-	Convey("数据不为空", t, func() {
+	Convey("data not null", t, func() {
 		So(err, ShouldBeNil)
 		So(result, ShouldNotBeNil)
 	})
@@ -88,4 +94,51 @@ func runBeforeMock() func() {
 		patchClientName.Reset()
 		patchConfig.Reset()
 	}
+}
+
+func TestDecodeResp(t *testing.T) {
+
+	mockConfig := test.GetOutConfig()
+	patchConfig := gomonkey.ApplyFunc(outconfig.Get, func() outconfig.Config {
+		return mockConfig
+	})
+	defer patchConfig.Reset()
+
+	text := "Hello, world!"
+	encryptKeyName := "encrypt.key.room.v2"
+	encryptKey := mockConfig.GetEncryptKeyByName(encryptKeyName)
+	b, err := encrypt.Encode([]byte(text), encryptKey)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err = compress.Encode(b, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stSend := &protobuf.ProxyRespData{}
+	stSend.Compress = true
+	stSend.Payload = b
+	stSend.EncryptEnable = true
+	stSend.EncryptKeyName = encryptKeyName
+	stSend.CompressAlgorithm = 0
+
+	pData, err := proto.Marshal(stSend)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fakeResponse := &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewReader(pData)),
+	}
+
+	result, err := DecodeResp(fakeResponse)
+	Convey("data not null", t, func() {
+		So(err, ShouldBeNil)
+		So(result, ShouldNotBeNil)
+		So(string(result), ShouldEqual, text)
+	})
 }

@@ -30,24 +30,12 @@ func use(algorithm Algorithm) Compress {
 }
 
 func Encode(data []byte, algorithm int32) ([]byte, error) {
-	/*defer func() {
-		if err := recover(); err != nil {
-			erro = errors.New("compress encode panic")
-			s.Log.Error("", zap.Any("Encode err", err))
-		}
-	}()*/
 
 	return use(Algorithm(algorithm)).Encode(data)
 }
 
 func Decode(data []byte, algorithm int32) ([]byte, error) {
 
-	/*defer func() {
-		if err := recover(); err != nil {
-			erro = errors.New("compress decode panic")
-			s.Log.Error("", zap.Any("Decode err", err))
-		}
-	}()*/
 	return use(Algorithm(algorithm)).Decode(data)
 }
 

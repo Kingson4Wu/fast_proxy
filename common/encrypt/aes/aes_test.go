@@ -21,7 +21,7 @@ func TestEncryptByAesWithKey(t *testing.T) {
 		expected = "aDBA5g4yEryqeDty8fuW3A=="
 	)
 	actual, _ := aes.EncryptByAesWithKey(in, "ABCDABCDABCDABCD")
-	if string(actual) != expected {
+	if actual != expected {
 		t.Errorf("EncryptByAesWithKey(%s) = %s; expected %s", in, actual, expected)
 	}
 }
@@ -34,7 +34,7 @@ func TestDecryptByAesWithKey(t *testing.T) {
 		expected = "kxw"
 	)
 	actual, _ := aes.DecryptByAesWithKey(in, "ABCDABCDABCDABCD")
-	if string(actual) != expected {
+	if actual != expected {
 		t.Errorf("DecryptByAesWithKey(%s) = %s; expected %s", in, actual, expected)
 	}
 }

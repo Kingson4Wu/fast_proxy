@@ -19,5 +19,7 @@
 9. inproxy/inconfig/config.go、 outproxy/outconfig/config.go ：扩展配置熟悉的技巧；
 10. inproxy/internal/limiter/LimitManager.go ： 限流控制
 11. inproxy/internal/proxy/httpclientProxy.go ： httpclient使用，用于转发请求，核心逻辑；
-12. 使用GoConvey、Gomonkey编写测试用例
+12. 使用GoConvey、Gomonkey编写测试用例；
+13. 使用Benchmark测试代码性能；
+
 

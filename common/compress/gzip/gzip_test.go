@@ -1,14 +1,14 @@
-package snappy_test
+package gzip_test
 
 import (
-	"github.com/Kingson4Wu/fast_proxy/common/compress/snappy"
+	"github.com/Kingson4Wu/fast_proxy/common/compress/gzip"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestEncode(t *testing.T) {
 
-	compress := snappy.Snappy{}
+	compress := gzip.Gzip{}
 	text := "hello world"
 	data := []byte(text)
 	encodeText, err := compress.Encode(data)

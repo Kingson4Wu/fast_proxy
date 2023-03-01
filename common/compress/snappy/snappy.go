@@ -7,11 +7,10 @@ import (
 type Snappy struct {
 }
 
-func (s *Snappy) Encode(data []byte) (result []byte, erro error) {
-
+func (s *Snappy) Encode(data []byte) ([]byte, error) {
 	return snappy.Encode(nil, data), nil
 }
 
-func (s *Snappy) Decode(data []byte) (result []byte, erro error) {
+func (s *Snappy) Decode(data []byte) ([]byte, error) {
 	return snappy.Decode(nil, data)
 }
