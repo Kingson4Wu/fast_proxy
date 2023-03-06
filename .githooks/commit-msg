@@ -1,0 +1,31 @@
+#!/bin/sh
+#set -x
+echo Run check before commit...
+
+function printBlueText {
+  local text=$1
+  local length=${2:-10}
+  printf "\033[34m%-*s\033[0m" $length "$text"
+  return 0
+}
+
+message=`cat $1`
+
+regex="^(feat:|fix:|refactor:|docs:|style:|test:|chore:|revert:)"
+
+if ! [[ $message =~ $regex ]]; then
+  echo '\033[31mYour git commit message does not conform to the specification and needs to start with the following words\033[0m:'
+  echo "$(printBlueText 'feat'): New feature"
+  echo "$(printBlueText 'fix'): Bug fix"
+  echo "$(printBlueText 'refactor'): Code refactor"
+  echo "$(printBlueText 'docs'): Documentation update"
+  echo "$(printBlueText 'style'): Code formatting and style changes (not CSS)"
+  echo "$(printBlueText 'test'): Changes to test case"
+  echo "$(printBlueText 'chore'): Other changes such as build process, dependency management"
+  echo "$(printBlueText 'revert'): Used to revert previous commits, see special case notes below"
+
+  exit  1
+fi
+
+
+

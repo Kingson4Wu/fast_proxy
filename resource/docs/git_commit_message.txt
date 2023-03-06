@@ -1,0 +1,10 @@
+type:
+
+feat: New feature
+fix: Bug fix
+refactor: Code refactor
+docs: Documentation update
+style: Code formatting and style changes (not CSS)
+test: Changes to test case
+chore: Other changes such as build process, dependency management
+revert: Used to revert previous commits, see special case notes below.
