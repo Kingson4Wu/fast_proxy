@@ -29,4 +29,5 @@ type Config interface {
 
 	HttpClientMaxIdleConns() int
 	HttpClientMaxIdleConnsPerHost() int
+	FastHttpEnable() bool
 }

@@ -73,3 +73,7 @@ func (c *yamlConfig) HttpClientMaxIdleConns() int {
 func (c *yamlConfig) HttpClientMaxIdleConnsPerHost() int {
 	return viper.GetInt("httpClient.MaxIdleConnsPerHost")
 }
+
+func (c *yamlConfig) FastHttpEnable() bool {
+	return viper.GetBool("fastHttp.enable")
+}

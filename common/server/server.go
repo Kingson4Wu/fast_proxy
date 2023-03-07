@@ -7,6 +7,8 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/network"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -35,6 +37,8 @@ func GetLogger() logger.Logger {
 type Proxy struct {
 	svr             *http.Server
 	port            int
+	proxyHandler    func(http.ResponseWriter, *http.Request)
+	otherHandlers   map[string]func(http.ResponseWriter, *http.Request)
 	wg              sync.WaitGroup
 	logger          logger.Logger
 	shutdownTimeout time.Duration
@@ -64,21 +68,32 @@ func WithLogger(logger logger.Logger) Option {
 
 func NewServer(config config.Config, logger logger.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
 
-	http.HandleFunc("/", proxyHandler)
+	//http.HandleFunc("/", proxyHandler)
+
 	svr := http.Server{
 		Addr: ":" + strconv.Itoa(config.ServerPort()),
 	}
 	return &Proxy{
-		svr:    &svr,
-		port:   config.ServerPort(),
-		logger: logger,
-		c:      config,
+		svr:           &svr,
+		port:          config.ServerPort(),
+		proxyHandler:  proxyHandler,
+		otherHandlers: make(map[string]func(http.ResponseWriter, *http.Request)),
+		logger:        logger,
+		c:             config,
 	}
 
 }
 
+//TODO fasthttp
+//client support
+
 func (p *Proxy) AddHandler(uri string, handler func(http.ResponseWriter, *http.Request)) *Proxy {
-	http.HandleFunc(uri, handler)
+	//http.HandleFunc(uri, handler)
+
+	if _, ok := p.otherHandlers[uri]; !ok {
+		p.otherHandlers[uri] = handler
+	}
+
 	return p
 }
 
@@ -142,7 +157,37 @@ func (p *Proxy) Start(opts ...Option) {
 		stop = p.sc.Register(p.c.ServerName(), intranetIp, p.c.ServerPort())
 	}
 
-	err := p.svr.ListenAndServe()
+	var err error
+
+	//https://github.com/valyala/fasthttp
+	if p.c.FastHttpEnable() {
+
+		handler := fasthttpadaptor.NewFastHTTPHandlerFunc(p.proxyHandler)
+
+		otherHandlers := make(map[string]fasthttp.RequestHandler)
+
+		for uri, f := range p.otherHandlers {
+			otherHandlers[uri] = fasthttpadaptor.NewFastHTTPHandlerFunc(f)
+		}
+
+		m := func(ctx *fasthttp.RequestCtx) {
+
+			if f, ok := otherHandlers[string(ctx.Path())]; ok {
+				f(ctx)
+			} else {
+				handler(ctx)
+			}
+		}
+
+		err = fasthttp.ListenAndServe(":"+strconv.Itoa(p.port), m)
+	} else {
+		http.HandleFunc("/", p.proxyHandler)
+		for uri, f := range p.otherHandlers {
+			http.HandleFunc(uri, f)
+		}
+		err = p.svr.ListenAndServe()
+	}
+
 	if err != nil {
 		if err != http.ErrServerClosed {
 			close(stop)

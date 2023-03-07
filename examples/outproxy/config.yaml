@@ -35,3 +35,7 @@ encryptKeyConfig:
 httpClient:
   MaxIdleConns: 5000
   MaxIdleConnsPerHost: 3000
+
+
+fastHttp:
+  enable: true

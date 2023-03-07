@@ -135,6 +135,10 @@ func (c *apolloConfig) HttpClientMaxIdleConnsPerHost() int {
 	return config.GetIntValue("httpClient.MaxIdleConnsPerHost", 3000)
 }
 
+func (c *apolloConfig) FastHttpEnable() bool {
+	return config.GetBoolValue("fastHttp.Enable", false)
+}
+
 var (
 	serviceConfigMap        map[string]ServiceConfig
 	encryptKeyMap           EncryptKeyConfig
