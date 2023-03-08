@@ -49,12 +49,12 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	clientServiceName := server.Center().ClientName(r)
 	requestPath := servicediscovery.RealRequestUri(r.RequestURI)
 	if !inconfig.Get().ContainsCallPrivilege(clientServiceName, requestPath) {
-		w.WriteHeader(http.StatusBadRequest)
+		writeErrorMessage(w, http.StatusBadRequest, "client has no privilege")
 		return
 	}
 
 	if limiter.IsLimit(clientServiceName, requestPath) {
-		w.WriteHeader(http.StatusBadRequest)
+		writeErrorMessage(w, http.StatusBadRequest, "client is limit")
 		return
 	}
 
@@ -68,15 +68,14 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	callUrl, rHandler := servicediscovery.Forward(r)
 
 	if callUrl == "" {
-		w.WriteHeader(http.StatusServiceUnavailable)
+		writeErrorMessage(w, http.StatusServiceUnavailable, "call url is blank")
 		return
 	}
 
 	// Create a request for forwarding
 	reqProxy, err := http.NewRequest(r.Method, callUrl, bytes.NewReader(bodyBytes))
 	if err != nil {
-		// response status code
-		w.WriteHeader(http.StatusServiceUnavailable)
+		writeErrorMessage(w, http.StatusServiceUnavailable, "request wrap error")
 		return
 	}
 	if rHandler != nil {
@@ -86,7 +85,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	deadTime := int64(servicediscovery.GetRequestDeadTime(r))
 	if deadTime > 0 {
 		if deadTime <= time.Now().Unix() {
-			w.WriteHeader(http.StatusGatewayTimeout)
+			writeErrorMessage(w, http.StatusGatewayTimeout, "already reach dead time")
 			return
 		} else {
 			ctx, cancel := context.WithDeadline(context.Background(), time.Unix(deadTime, 0))
@@ -120,11 +119,10 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		server.GetLogger().Error("Error forwarding request", zap.Any("req forward err", err))
 
 		if errors.Is(err, context.DeadlineExceeded) {
-			w.WriteHeader(http.StatusGatewayTimeout)
+			writeErrorMessage(w, http.StatusGatewayTimeout, "call timeout")
 			return
 		}
-
-		w.WriteHeader(http.StatusServiceUnavailable)
+		writeErrorMessage(w, http.StatusServiceUnavailable, "call error")
 		return
 	}
 
@@ -155,5 +153,6 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 func writeErrorMessage(res http.ResponseWriter, statusCode int, errorHeader string) {
 	res.Header().Add("proxy_error_message", errorHeader)
+	res.Header().Add("proxy_name", "in_proxy")
 	res.WriteHeader(statusCode)
 }

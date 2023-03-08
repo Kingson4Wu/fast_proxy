@@ -8,6 +8,7 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
 	"github.com/Kingson4Wu/fast_proxy/inproxy/internal/proxy"
 	"net/http"
+	_ "net/http/pprof"
 	"time"
 )
 
