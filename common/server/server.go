@@ -7,6 +7,7 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/network"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
+	"github.com/felixge/fgprof"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"go.uber.org/zap"
@@ -15,6 +16,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -164,19 +166,29 @@ func (p *Proxy) Start(opts ...Option) {
 
 		handler := fasthttpadaptor.NewFastHTTPHandlerFunc(p.proxyHandler)
 
+		pprofHandler := fasthttpadaptor.NewFastHTTPHandler(fgprof.Handler())
+
 		otherHandlers := make(map[string]fasthttp.RequestHandler)
 
 		for uri, f := range p.otherHandlers {
 			otherHandlers[uri] = fasthttpadaptor.NewFastHTTPHandlerFunc(f)
 		}
 
+		otherHandlers["/debug/pprof"] = pprofHandler
+
 		m := func(ctx *fasthttp.RequestCtx) {
 
-			if f, ok := otherHandlers[string(ctx.Path())]; ok {
-				f(ctx)
-			} else {
-				handler(ctx)
+			path := string(ctx.Path())
+			if strings.HasPrefix(path, "/debug/pprof") {
+				pprofHandler(ctx)
+				return
 			}
+
+			if f, ok := otherHandlers[path]; ok {
+				f(ctx)
+				return
+			}
+			handler(ctx)
 		}
 
 		err = fasthttp.ListenAndServe(":"+strconv.Itoa(p.port), m)

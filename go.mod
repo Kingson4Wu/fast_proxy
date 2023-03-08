@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/agiledragon/gomonkey v2.0.2+incompatible
 	github.com/apolloconfig/agollo/v4 v4.2.1
+	github.com/felixge/fgprof v0.9.3
 	github.com/golang/snappy v0.0.4
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/spf13/viper v1.14.0
@@ -18,6 +19,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect

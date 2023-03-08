@@ -8,8 +8,11 @@
 
 ----
 
-## v1
-+ ea1cfb81b0cf24996ebfc73d89d236a0dd212652
+# v1
++ `git rev-parse --short=10 HEAD`
++ `3f57fb3466`
+
+## wrk
 
 <pre>
  /usr/local/Cellar/wrk/4.1.0/bin/wrk -d 60 -c 100  -t 32 -s post.lua http://127.0.0.1:8034/search_service/api/service
@@ -82,7 +85,7 @@ Transfer/sec:    566.92KB
 
 </pre>
 
-+ 初步看来： 4 threads and 128 connections 测试效果最佳
++ At first glance, the best test result is achieved with 4 threads and 128 connections.
 + qps: 3500
 
 
@@ -102,6 +105,11 @@ Disks: 193858870/18T read, 114611261/18T written.
 PID   COMMAND      %CPU  TIME     #TH  #WQ  #POR MEM   PURG CMPRS  PGRP PPID
 5917  ___go_build_ 70.4  09:25.41 16/3 0    26   16M-  0B   1004K  5917 2364
 
+stop test
+
+PID   COMMAND      %CPU  TIME     #TH  #WQ  #POR MEM    PURG CMPRS  PGRP PPID
+5917  ___go_build_ 0.0   09:39.83 16   0    26   9148K  0B   1016K  5917 2364
+
 -----
 
 top -pid $(ps -ef | grep inproxy | grep -v 'grep' | awk '{print $2}')
@@ -118,5 +126,29 @@ Disks: 193856436/18T read, 114609069/18T written.
 PID   COMMAND      %CPU  TIME     #TH  #WQ  #POR MEM  PURG CMPRS PGRP PPID
 5729  ___go_build_ 79.7  10:49.36 17/4 0    27   31M+ 0B   976K  5729 2364
 
+stop test
+
+PID   COMMAND      %CPU  TIME     #TH  #WQ  #POR MEM  PURG CMPRS PGRP PPID
+5729  ___go_build_ 0.0   11:57.72 17   0    27   15M  0B   992K  5729 2364
+
 </pre>
+
++ wrk -> outproxy(fasthttp client, fasthttp server) ->  outproxy(golang http client, fasthttp server) -> server
+
++ Why in proxy use more memory than out proxy ?
++ Why is there a lot of memory not released after stopping the in proxy test ?
+
+
+## pprof
+
+### CPU
++ in : `go tool pprof -http :8081 http://localhost:8033/debug/pprof/profile`
++ out : `go tool pprof -http :8082 http://localhost:8034/debug/pprof/profile`
+
+### Memory
++ in : `go tool pprof -http :8081 http://localhost:8033/debug/pprof/heap`
++ out : `go tool pprof -http :8082 http://localhost:8034/debug/pprof/heap`
+
+
++ fasthttp server _ "net/http/pprof"
 
