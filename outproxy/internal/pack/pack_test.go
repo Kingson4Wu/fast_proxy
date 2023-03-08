@@ -44,7 +44,8 @@ func BenchmarkEncodeReq(b *testing.B) {
 		EncodeReq(req)
 	}
 
-	//TODO Benchmark test generates pprof file analysis
+	//Benchmark test generates pprof file analysis
+	//go test ./outproxy/internal/pack -bench="^\QBenchmarkEncodeReq\E$" -gcflags "all=-N -l" -memprofile=mem.pprof
 }
 
 func TestEncodeReq(t *testing.T) {
