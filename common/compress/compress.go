@@ -10,8 +10,8 @@ var algorithms map[Algorithm]Compress
 func init() {
 
 	algorithms = make(map[Algorithm]Compress)
-	algorithms[Snappy] = &snappy.Snappy{}
-	algorithms[Gzip] = &gzip.Gzip{}
+	algorithms[Snappy] = new(snappy.Snappy)
+	algorithms[Gzip] = new(gzip.Gzip)
 
 }
 

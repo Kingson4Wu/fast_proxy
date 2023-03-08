@@ -23,6 +23,7 @@
 13. 使用 Benchmark 对代码性能进行测试。
 14. 使用 fuzzy 测试技术发现问题，并使用 go test race 进行竞态分析。
 15. 使用 escape_analysis.sh 工具对项目进行逃逸分析，以使内存尽量在栈上进行分配。
+16. 使用 fasthttp 作为server和client的例子。
 
 
 PS: 强烈推荐一本书籍：《Go 语言精进之路》。该书可以帮助你快速入门 Golang，

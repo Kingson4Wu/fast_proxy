@@ -46,6 +46,10 @@ type Proxy struct {
 	c               config.Config
 }
 
+func New() *Proxy {
+	return &Proxy{otherHandlers: make(map[string]func(http.ResponseWriter, *http.Request))}
+}
+
 type Option func(*Proxy)
 
 func WithShutdownTimeout(timeout time.Duration) Option {
@@ -73,19 +77,16 @@ func NewServer(config config.Config, logger logger.Logger, proxyHandler func(htt
 	svr := http.Server{
 		Addr: ":" + strconv.Itoa(config.ServerPort()),
 	}
-	return &Proxy{
-		svr:           &svr,
-		port:          config.ServerPort(),
-		proxyHandler:  proxyHandler,
-		otherHandlers: make(map[string]func(http.ResponseWriter, *http.Request)),
-		logger:        logger,
-		c:             config,
-	}
 
+	p := New()
+	p.svr = &svr
+	p.port = config.ServerPort()
+	p.proxyHandler = proxyHandler
+	p.logger = logger
+	p.c = config
+
+	return p
 }
-
-//TODO fasthttp
-//client support
 
 func (p *Proxy) AddHandler(uri string, handler func(http.ResponseWriter, *http.Request)) *Proxy {
 	//http.HandleFunc(uri, handler)
@@ -159,7 +160,6 @@ func (p *Proxy) Start(opts ...Option) {
 
 	var err error
 
-	//https://github.com/valyala/fasthttp
 	if p.c.FastHttpEnable() {
 
 		handler := fasthttpadaptor.NewFastHTTPHandlerFunc(p.proxyHandler)
