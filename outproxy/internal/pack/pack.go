@@ -112,6 +112,16 @@ func DecodeResp(resp *http.Response) ([]byte, *cerror.Err) {
 	return pData, nil
 }
 
+func DecodeFastResp(bodyBytes []byte) ([]byte, *cerror.Err) {
+	pData, err := Decode(bodyBytes)
+
+	if err != nil {
+		return nil, cerror.NewError(http.StatusInternalServerError, "decrypt failure")
+	}
+
+	return pData, nil
+}
+
 //-------
 
 type Middleware func([]byte, *config.ServiceConfig) ([]byte, error)
