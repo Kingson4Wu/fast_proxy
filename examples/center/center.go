@@ -56,7 +56,14 @@ func Register(name string, ip string, port int) {
 
 }
 
+var nameToAddress = make(map[string]string)
+
 func GetAddress(name string) string {
+
+	if v, ok := nameToAddress[name]; ok {
+		return v
+	}
+
 	resp, err := http.Post("http://127.0.0.1:8080/api/address/get",
 		"application/x-www-form-urlencoded",
 		strings.NewReader(fmt.Sprintf("name=%s", name)))
@@ -72,7 +79,9 @@ func GetAddress(name string) string {
 
 	bodyBytes, _ := io.ReadAll(resp.Body)
 
-	return strings.TrimSpace(string(bodyBytes))
+	address := strings.TrimSpace(string(bodyBytes))
+	nameToAddress[name] = address
+	return address
 }
 
 func GetSC(f func() string) *servicediscovery.ServiceCenter {

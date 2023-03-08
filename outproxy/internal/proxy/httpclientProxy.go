@@ -36,8 +36,8 @@ func BuildClient(c config.Config) {
 	fastHttpClient = &fasthttp.Client{
 		MaxConnsPerHost: c.HttpClientMaxIdleConnsPerHost(),
 		//MaxIdleConnDuration: c.HttpClientMaxIdleConns(),
-		WriteTimeout: 50 * time.Millisecond,
-		ReadTimeout:  50 * time.Millisecond,
+		//WriteTimeout: 50 * time.Millisecond,
+		//ReadTimeout:  50 * time.Millisecond,
 	}
 }
 

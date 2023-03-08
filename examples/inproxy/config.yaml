@@ -33,7 +33,7 @@ serviceCallTypeConfig:
   chat_service:
     /search_service/api/service:
       callType: 1
-      qps: 20
+      qps: 20000000000
 
 httpClient:
   MaxIdleConns: 5000

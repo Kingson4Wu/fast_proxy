@@ -1,4 +1,6 @@
-+ top -pid 63565
++ top -pid 5729
++ `top -pid $(ps -ef | grep inproxy | grep -v 'grep' | awk '{print $2}')`
++ `top -pid $(ps -ef | grep outproxy | grep -v 'grep' | awk '{print $2}')`
 
 ### TimeWait
 + `netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'`
