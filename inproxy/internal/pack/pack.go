@@ -88,6 +88,16 @@ func EncodeResp(resp *http.Response, reData *protobuf.ProxyData) ([]byte, *cerro
 	return pData, nil
 }
 
+func EncodeFastResp(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, *cerror.Err) {
+	pData, err := Encode(bodyBytes, reData)
+
+	if err != nil {
+		return nil, cerror.NewError(http.StatusInternalServerError, "EncodeFastResp failure")
+	}
+
+	return pData, nil
+}
+
 func Encode(bodyBytes []byte, reData *protobuf.ProxyData) ([]byte, error) {
 
 	var resultBody []byte

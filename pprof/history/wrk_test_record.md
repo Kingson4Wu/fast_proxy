@@ -10,7 +10,7 @@
 
 # v1
 + `git rev-parse --short=10 HEAD`
-+ `3f57fb3466`
++ `97b1353554`
 
 ## wrk
 
@@ -137,6 +137,7 @@ PID   COMMAND      %CPU  TIME     #TH  #WQ  #POR MEM  PURG CMPRS PGRP PPID
 
 + Why in proxy use more memory than out proxy ?
 + Why is there a lot of memory not released after stopping the in proxy test ?
++ Use fasthttp client , and fix it.
 
 
 ## pprof
