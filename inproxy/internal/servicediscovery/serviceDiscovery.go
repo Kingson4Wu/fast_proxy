@@ -32,12 +32,17 @@ func Forward(r *http.Request) (string, func(*http.Request)) {
 		return "", nil
 	}
 
-	callUrl = "http://" + addr.Ip + ":" + strconv.Itoa(addr.Port) + requestPath
+	builder := strings.Builder{}
+	builder.WriteString("http://")
+	builder.WriteString(addr.Ip)
+	builder.WriteString(":")
+	builder.WriteString(strconv.Itoa(addr.Port))
+	builder.WriteString(requestPath)
+	callUrl = builder.String()
 
-	if callUrl != "" {
+	if len(callUrl) > 0 {
 		return callUrl, rHandler
 	}
 
 	return "", nil
-
 }
