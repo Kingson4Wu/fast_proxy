@@ -446,7 +446,7 @@ Total: 30.64MB
 
 </pre>
 
-### 并发测试
+### concurrent test
 
 <pre>
 
@@ -714,7 +714,7 @@ ROUTINE ======================== github.com/Kingson4Wu/fast_proxy/inproxy/intern
 </pre>
 
 
-### 并发测试
+### concurrent test
 
 <pre>
 

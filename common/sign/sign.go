@@ -9,6 +9,21 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/server"
 )
 
+func getSignKey(serviceConfig *config.ServiceConfig, signName string) (string, error) {
+	if signName != "" {
+		signKey := server.Config().GetSignKeyByName(signName)
+		if signKey == "" {
+			return "", errors.New("sign key not exist")
+		}
+		return signKey, nil
+	}
+	signKey := server.Config().GetSignKey(serviceConfig)
+	if signKey == "" {
+		return "", errors.New("sign key not exist")
+	}
+	return signKey, nil
+}
+
 func GenerateSign(body []byte, signKey string) (string, error) {
 
 	if signKey == "" {
@@ -25,20 +40,18 @@ func GenerateSign(body []byte, signKey string) (string, error) {
 
 func GenerateBodySignWithName(body []byte, signName string) (string, error) {
 
-	signKey := server.Config().GetSignKeyByName(signName)
-
-	if signKey == "" {
-		return "", errors.New("sign key not exist")
+	signKey, err := getSignKey(nil, signName)
+	if err != nil {
+		return "", err
 	}
 	return GenerateSign(body, signKey)
 }
 
 func GenerateBodySign(body []byte, serviceConfig *config.ServiceConfig) (string, error) {
 
-	signKey := server.Config().GetSignKey(serviceConfig)
-
-	if signKey == "" {
-		return "", errors.New("sign key not exist")
+	signKey, err := getSignKey(serviceConfig, "")
+	if err != nil {
+		return "", err
 	}
 	return GenerateSign(body, signKey)
 }
