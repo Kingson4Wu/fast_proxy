@@ -1,5 +1,5 @@
 proxy:
-  forwardAddress: http://127.0.0.1:8033/inProxy
+  forwardAddress: http://127.0.0.1:9033/inProxy
 
 application:
   port : 8034
