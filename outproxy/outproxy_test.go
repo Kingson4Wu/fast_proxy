@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"github.com/Kingson4Wu/fast_proxy/examples/center"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/internal/pack"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
+	"github.com/Kingson4Wu/fast_proxy/test"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -17,7 +17,7 @@ import (
 
 func init() {
 
-	configBytes, err := ConfigFs.ReadFile("internal/config.yaml")
+	configBytes, err := ConfigFs.ReadFile("testdata/config.yaml")
 	if err != nil {
 		fmt.Printf("%s", err)
 		os.Exit(1)
@@ -25,11 +25,9 @@ func init() {
 
 	c := outconfig.LoadYamlConfig(configBytes)
 
-	sc := center.GetSC(func() string { return outconfig.Get().ServiceRpcHeaderName() })
-
-	go NewServer(c, server.WithServiceCenter(sc))
-
-	//TODO ，mock，todo
+	go NewServer(c, server.WithServiceCenter(test.GetSC()))
+	go test.Service()
+	go test.MockInProxyServe()
 
 	time.Sleep(3 * time.Second)
 
