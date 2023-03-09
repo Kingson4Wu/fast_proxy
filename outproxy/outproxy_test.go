@@ -26,7 +26,7 @@ func init() {
 	c := outconfig.LoadYamlConfig(configBytes)
 
 	go NewServer(c, server.WithServiceCenter(test.GetSC()))
-	go test.Service()
+	//go test.Service()
 	go test.MockInProxyServe()
 
 	time.Sleep(3 * time.Second)
