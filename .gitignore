@@ -15,3 +15,7 @@ in-proxy
 out-proxy
 coverage.txt
 *.pprof
+*.prof
+outproxy.test
+inproxy.test
+mem.pprof
