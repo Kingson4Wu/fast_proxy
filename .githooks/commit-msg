@@ -1,6 +1,6 @@
 #!/bin/sh
 #set -x
-echo Run check before commit...
+echo Run check before commit....
 
 function printBlueText {
   local text=$1
