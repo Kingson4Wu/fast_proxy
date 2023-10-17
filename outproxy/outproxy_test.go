@@ -48,7 +48,7 @@ func TestRequestProxy(t *testing.T) {
 	}
 	rw := httptest.NewRecorder()
 	requestProxy(rw, r)
-	fmt.Println(string(rw.Body.Bytes()))
+	fmt.Println(rw.Body.String())
 
 	if rw.Code != http.StatusOK {
 		t.Fatal("resp code error")

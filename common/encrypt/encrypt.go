@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/Kingson4Wu/fast_proxy/common/encrypt/aes"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"io"
 )
 
 func Encode(data []byte, key string) (result []byte, error error) {
@@ -33,6 +32,6 @@ func Decode(data []byte, key string) (result []byte, error error) {
 	return
 }
 
-func encrypt(dst io.Writer, src io.Reader) {
+/*func encrypt(dst io.Writer, src io.Reader) {
 	//src.Read()
-}
+}*/

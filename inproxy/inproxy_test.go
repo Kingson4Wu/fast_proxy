@@ -42,7 +42,7 @@ func TestRequestProxy(t *testing.T) {
 			"Content-Type:application/x-www-form-urlencoded\r\n" +
 			"C_ServiceName:chat_service\r\n\r\n"
 
-	r, err := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
+	r, _ := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
 
 	data, err := os.ReadFile("../outproxy/testdata/encodeReq.golden")
 	if err != nil {
@@ -69,7 +69,7 @@ func BenchmarkRequestProxy(b *testing.B) {
 			"Content-Type:application/x-www-form-urlencoded\r\n" +
 			"C_ServiceName:chat_service\r\n\r\n"
 
-	r, err := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
+	r, _ := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
 
 	data, err := os.ReadFile("../outproxy/testdata/encodeReq.golden")
 	if err != nil {
@@ -96,7 +96,7 @@ func BenchmarkRequestProxyParallel(b *testing.B) {
 			"Content-Type:application/x-www-form-urlencoded\r\n" +
 			"C_ServiceName:chat_service\r\n\r\n"
 
-	r, err := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
+	r, _ := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
 
 	data, err := os.ReadFile("../outproxy/testdata/encodeReq.golden")
 	if err != nil {
@@ -122,7 +122,7 @@ func TestEncodeRespToGolden(t *testing.T) {
 			"Content-Type:application/x-www-form-urlencoded\r\n" +
 			"C_ServiceName:chat_service\r\n\r\n"
 
-	r, err := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
+	r, _ := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
 
 	data, err := os.ReadFile("../outproxy/testdata/encodeReq.golden")
 	if err != nil {

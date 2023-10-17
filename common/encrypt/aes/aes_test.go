@@ -45,7 +45,7 @@ func BenchmarkEncryptByAesWithKey(b *testing.B) {
 	)
 	b.ResetTimer()
 
-	aes.EncryptByAesWithKey(in, "ABCDABCDABCDABCD")
+	_, _ = aes.EncryptByAesWithKey(in, "ABCDABCDABCDABCD")
 }
 
 //go test -bench=. -run=^$

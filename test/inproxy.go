@@ -15,7 +15,7 @@ func MockInProxyServe() {
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
 
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 
 	http.HandleFunc("/", handler)

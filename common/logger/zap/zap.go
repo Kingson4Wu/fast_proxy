@@ -113,5 +113,5 @@ func (pl zapLogger) GetWriter() io.Writer {
 }
 
 func (pl zapLogger) Flush() {
-	pl.logger.Sync()
+	_ = pl.logger.Sync()
 }

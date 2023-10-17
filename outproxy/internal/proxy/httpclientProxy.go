@@ -94,7 +94,7 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 	if responseProxy != nil {
 		defer func() {
-			io.Copy(io.Discard, responseProxy.Body)
+			_, _ = io.Copy(io.Discard, responseProxy.Body)
 			responseProxy.Body.Close()
 		}()
 	}
@@ -129,9 +129,18 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		defer resProxyBody.Close() // Delay off
 		// Copy the forwarded response Body to the response Body
 		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
-		io.Copy(w, resProxyBody)
+
+		if _, err := io.Copy(w, resProxyBody); err != nil {
+			server.GetLogger().Error("Error forwarding request", "io.Copy err", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 	} else {
-		io.Copy(w, responseProxy.Body)
+		if _, err := io.Copy(w, responseProxy.Body); err != nil {
+			server.GetLogger().Error("Error forwarding request", "io.Copy err", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 		w.WriteHeader(responseProxy.StatusCode)
 	}
 
@@ -215,9 +224,17 @@ func fastDoProxy(w http.ResponseWriter, r *http.Request) {
 		defer resProxyBody.Close() // Delay off
 		// Copy the forwarded response Body to the response Body
 		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
-		io.Copy(w, resProxyBody)
+		if _, err := io.Copy(w, resProxyBody); err != nil {
+			server.GetLogger().Error("Error forwarding request", "io.Copy err", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 	} else {
-		w.Write(resProxy.Body())
+		if _, err := w.Write(resProxy.Body()); err != nil {
+			server.GetLogger().Error("Error forwarding request", "w.Write err", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 		w.WriteHeader(resProxy.StatusCode())
 	}
 }
