@@ -3,11 +3,14 @@ package gzip
 import (
 	"bytes"
 	"compress/gzip"
+	"github.com/Kingson4Wu/fast_proxy/common/compress"
 	"io"
 )
 
 type Gzip struct {
 }
+
+var _ compress.Compress = &Gzip{}
 
 func (*Gzip) Encode(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
