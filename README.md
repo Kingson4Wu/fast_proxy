@@ -4,6 +4,8 @@
 
 English| [简体中文](https://github.com/kingson4wu/fast_proxy/blob/main/README-CN.md)
 
+[deepwiki](https://deepwiki.com/Kingson4Wu/fast_proxy)
+
 fastproxy is a high-performance agent that can encrypt and decrypt inbound and outbound traffic, authenticate, and limit flow control, etc.
 
 Key features:
