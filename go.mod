@@ -1,16 +1,18 @@
 module github.com/Kingson4Wu/fast_proxy
 
-go 1.19
+go 1.23.0
 
 require (
-	github.com/agiledragon/gomonkey v2.0.2+incompatible
+	github.com/agiledragon/gomonkey/v2 v2.13.0
 	github.com/apolloconfig/agollo/v4 v4.2.1
 	github.com/felixge/fgprof v0.9.3
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang/snappy v0.0.4
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/spf13/viper v1.14.0
 	github.com/valyala/fasthttp v1.44.0
 	go.uber.org/zap v1.24.0
+	golang.org/x/crypto v0.41.0
 	golang.org/x/time v0.3.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -37,8 +39,8 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/sys v0.0.0-20220908164124-27713097b956 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

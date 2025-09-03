@@ -75,6 +75,12 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, pb, error := pack.DecodeReq(r)
 	defer pack.PbPool.Put(pb)
 	if error != nil {
+		server.GetLogger().Error("Proxy request decode failed", 
+			"error_code", error.Code,
+			"error_msg", error.Msg,
+			"client_ip", r.RemoteAddr,
+			"uri", r.RequestURI)
+		
 		writeErrorMessage(w, error.Code, error.Msg)
 		return
 	}
@@ -150,6 +156,13 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 
 	body, error := pack.EncodeResp(responseProxy, pb)
 	if error != nil {
+		server.GetLogger().Error("Proxy response encode failed",
+			"error_code", error.Code,
+			"error_msg", error.Msg,
+			"status_code", responseProxy.StatusCode,
+			"client_ip", r.RemoteAddr,
+			"uri", r.RequestURI)
+		
 		writeErrorMessage(w, error.Code, error.Msg)
 		return
 	}
@@ -181,6 +194,12 @@ func fastDoProxy(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, pb, erro := pack.DecodeReq(r)
 	defer pack.PbPool.Put(pb)
 	if erro != nil {
+		server.GetLogger().Error("Fast proxy request decode failed",
+			"error_code", erro.Code,
+			"error_msg", erro.Msg,
+			"client_ip", r.RemoteAddr,
+			"uri", r.RequestURI)
+		
 		writeErrorMessage(w, erro.Code, erro.Msg)
 		return
 	}
@@ -253,6 +272,13 @@ func fastDoProxy(w http.ResponseWriter, r *http.Request) {
 	if resProxy.StatusCode() == http.StatusOK {
 		body, errn := pack.EncodeFastResp(resProxy.Body(), pb)
 		if errn != nil {
+			server.GetLogger().Error("Fast proxy response encode failed",
+				"error_code", errn.Code,
+				"error_msg", errn.Msg,
+				"status_code", resProxy.StatusCode,
+				"client_ip", r.RemoteAddr,
+				"uri", r.RequestURI)
+			
 			writeErrorMessage(w, errn.Code, errn.Msg)
 			return
 		}

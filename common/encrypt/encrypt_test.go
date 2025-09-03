@@ -5,7 +5,7 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/logger"
 	"github.com/Kingson4Wu/fast_proxy/common/logger/zap"
 	"github.com/Kingson4Wu/fast_proxy/common/server"
-	"github.com/agiledragon/gomonkey"
+	"github.com/agiledragon/gomonkey/v2"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )

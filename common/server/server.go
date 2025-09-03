@@ -72,6 +72,12 @@ func WithLogger(logger logger.Logger) Option {
 	}
 }
 
+func WithCustomHandler(handler func(http.ResponseWriter, *http.Request)) Option {
+	return func(p *Proxy) {
+		p.proxyHandler = handler
+	}
+}
+
 func NewServer(config config.Config, logger logger.Logger, proxyHandler func(http.ResponseWriter, *http.Request)) *Proxy {
 
 	//http.HandleFunc("/", proxyHandler)
