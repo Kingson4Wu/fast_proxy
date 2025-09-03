@@ -1,6 +1,6 @@
 module github.com/Kingson4Wu/fast_proxy
 
-go 1.23.0
+go 1.23
 
 require (
 	github.com/agiledragon/gomonkey/v2 v2.13.0
