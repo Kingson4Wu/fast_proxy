@@ -6,7 +6,9 @@ import (
 	"github.com/Kingson4Wu/fast_proxy/common/compress"
 	"github.com/Kingson4Wu/fast_proxy/common/encrypt"
 	"github.com/Kingson4Wu/fast_proxy/common/proto/protobuf"
+	"github.com/Kingson4Wu/fast_proxy/common/server"
 	"github.com/Kingson4Wu/fast_proxy/common/servicediscovery"
+	"github.com/Kingson4Wu/fast_proxy/common/logger/zap"
 	"github.com/Kingson4Wu/fast_proxy/outproxy/outconfig"
 	"github.com/Kingson4Wu/fast_proxy/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -15,6 +17,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Create a test service center for testing
@@ -69,14 +72,24 @@ func BenchmarkEncodeReq(b *testing.B) {
 }
 
 func TestEncodeReq(t *testing.T) {
-	// Skip the test due to gomonkey compatibility issues
-	t.Skip("Skipping test due to gomonkey compatibility issues")
-	
+	// Initialize outproxy configuration used by Encode
+	mockOutCfg := test.GetMockOutConfig()
+	outconfig.Read(mockOutCfg)
+
+	// Start a lightweight server to initialize server.Center()
+	// Use port 0 to avoid collisions; provide a no-op handler
+	go func() {
+		p := server.NewServer(mockOutCfg, zap.DefaultLogger(), func(http.ResponseWriter, *http.Request) {})
+		p.Start(server.WithServiceCenter(test.GetOutSC()))
+	}()
+	// Give the server a brief moment to initialize the global state
+	time.Sleep(200 * time.Millisecond)
+
 	httpPostReq :=
 		"POST /service_name/thrift/service HTTP/1.0\r\n" +
 			"protocol:json\r\n" +
 			"Content-Type:application/x-thrift\r\n" +
-			"C_service_name:labali\r\n\r\n" +
+			"C_ServiceName:labali\r\n\r\n" +
 			"[1,\"getUserId\",1,1,{\"1\":{\"i32\":123433123}}]\r\n"
 
 	req, err := http.ReadRequest(bufio.NewReader(strings.NewReader(httpPostReq)))
