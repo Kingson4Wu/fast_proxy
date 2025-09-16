@@ -206,13 +206,15 @@ func (p *Proxy) Start(opts ...Option) {
 		err = p.svr.ListenAndServe()
 	}
 
-	if err != nil {
-		if err != http.ErrServerClosed {
-			close(stop)
-			p.logger.Error("proxy server start failed ", zap.Any("err", err))
-			return
-		}
-	}
+    if err != nil {
+        if err != http.ErrServerClosed {
+            if stop != nil {
+                close(stop)
+            }
+            p.logger.Error("proxy server start failed ", zap.Any("err", err))
+            return
+        }
+    }
 	p.wg.Wait()
 	p.logger.Info("proxy shutdown ok")
 }
