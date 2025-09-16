@@ -13,12 +13,23 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"strconv"
 	"time"
 )
 
 var client *http.Client
 var fastHttpClient *fasthttp.Client
+
+// hop-by-hop headers that should not be forwarded between client and upstream
+func isHopByHop(h string) bool {
+    switch strings.ToLower(h) {
+    case "connection", "proxy-connection", "keep-alive", "te", "trailer", "transfer-encoding", "upgrade":
+        return true
+    default:
+        return false
+    }
+}
 
 func BuildClient(c config.Config) {
 	tr := &http.Transport{
@@ -84,10 +95,15 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Header of forwarding request
-	for k, v := range r.Header {
-		reqProxy.Header.Set(k, v[0])
-	}
+    // Header of forwarding request (skip hop-by-hop)
+    for k, v := range r.Header {
+        if isHopByHop(k) {
+            continue
+        }
+        if len(v) > 0 {
+            reqProxy.Header.Set(k, v[0])
+        }
+    }
 
 	// make a request
 	responseProxy, err := client.Do(reqProxy)
@@ -110,13 +126,15 @@ func DoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Header of the forwarded response
-	for k, v := range responseProxy.Header {
-		/*if strings.EqualFold(k, "Content-Length") {
-			continue
-		}*/
-		w.Header().Set(k, v[0])
-	}
+    // Header of the forwarded response (skip hop-by-hop)
+    for k, v := range responseProxy.Header {
+        if isHopByHop(k) {
+            continue
+        }
+        if len(v) > 0 {
+            w.Header().Set(k, v[0])
+        }
+    }
 
 	if responseProxy.StatusCode == http.StatusOK {
 		body, errn := pack.DecodeResp(responseProxy)
@@ -165,12 +183,16 @@ func fastDoProxy(w http.ResponseWriter, r *http.Request) {
 	reqProxy.SetRequestURI(reqURL)
 	reqProxy.Header.SetMethod(r.Method)
 
-	// Copy request headers to fasthttp request
-	headers := &reqProxy.Header
-
-	for k, v := range r.Header {
-		headers.Set(k, v[0])
-	}
+    // Copy request headers to fasthttp request (skip hop-by-hop)
+    headers := &reqProxy.Header
+    for k, v := range r.Header {
+        if isHopByHop(k) {
+            continue
+        }
+        if len(v) > 0 {
+            headers.Set(k, v[0])
+        }
+    }
 
 	reqProxy.SetBody(bodyBytes)
 
@@ -207,11 +229,14 @@ func fastDoProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set response headers
-	resHeader := w.Header()
-	resProxy.Header.VisitAll(func(k, v []byte) {
-		resHeader.Set(string(k), string(v))
-	})
+    // Set response headers (skip hop-by-hop)
+    resHeader := w.Header()
+    resProxy.Header.VisitAll(func(k, v []byte) {
+        if isHopByHop(string(k)) {
+            return
+        }
+        resHeader.Set(string(k), string(v))
+    })
 
 	if resProxy.StatusCode() == http.StatusOK {
 		body, errn := pack.DecodeFastResp(resProxy.Body())
