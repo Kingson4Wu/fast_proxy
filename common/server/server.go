@@ -22,18 +22,36 @@ import (
 	"time"
 )
 
-var server *Proxy
+var (
+    server *Proxy
+    srvMu  sync.RWMutex
+)
 
 func Center() *servicediscovery.ServiceCenter {
-	return server.sc
+    srvMu.RLock()
+    defer srvMu.RUnlock()
+    if server == nil {
+        return nil
+    }
+    return server.sc
 }
 
 func Config() config.Config {
-	return server.c
+    srvMu.RLock()
+    defer srvMu.RUnlock()
+    if server == nil {
+        return nil
+    }
+    return server.c
 }
 
 func GetLogger() logger.Logger {
-	return server.logger
+    srvMu.RLock()
+    defer srvMu.RUnlock()
+    if server == nil {
+        return logger.DiscardLogger
+    }
+    return server.logger
 }
 
 type Proxy struct {
@@ -61,9 +79,11 @@ func WithShutdownTimeout(timeout time.Duration) Option {
 }
 
 func WithServiceCenter(sc *servicediscovery.ServiceCenter) Option {
-	return func(p *Proxy) {
-		p.sc = sc
-	}
+    return func(p *Proxy) {
+        srvMu.Lock()
+        p.sc = sc
+        srvMu.Unlock()
+    }
 }
 
 func WithLogger(logger logger.Logger) Option {
@@ -115,8 +135,9 @@ func (p *Proxy) RegisterOnShutdown(f func()) {
 }
 
 func (p *Proxy) Start(opts ...Option) {
-
-	server = p
+    srvMu.Lock()
+    server = p
+    srvMu.Unlock()
 
 	for _, opt := range opts {
 		opt(p)

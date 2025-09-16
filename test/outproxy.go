@@ -36,7 +36,8 @@ func (c *mockOutConfig) ServerName() string {
 }
 
 func (c *mockOutConfig) ServerPort() int {
-	return 8034
+    // use 0 to let OS choose a free port to avoid collisions in CI
+    return 0
 }
 
 func (c *mockOutConfig) ServiceRpcHeaderName() string {
