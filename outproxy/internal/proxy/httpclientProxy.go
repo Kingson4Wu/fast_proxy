@@ -52,6 +52,16 @@ func BuildClient(c config.Config) {
 	}
 }
 
+// Close releases resources held by underlying clients (idle connections, etc.).
+func Close() {
+    if client != nil {
+        if tr, ok := client.Transport.(*http.Transport); ok {
+            tr.CloseIdleConnections()
+        }
+    }
+    // fasthttp client keeps connections in pools; nothing explicit required here
+}
+
 // DoProxy /** forward request */
 func DoProxy(w http.ResponseWriter, r *http.Request) {
 
