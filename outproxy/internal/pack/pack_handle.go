@@ -6,16 +6,17 @@ type PackHandler interface {
 	Fmap(fn func([]byte, *config.ServiceConfig) ([]byte, error)) PackHandler
 }
 type packHandlerImpl struct {
-	b  []byte
-	sc *config.ServiceConfig
+    b  []byte
+    sc *config.ServiceConfig
 }
 
 func (phi packHandlerImpl) Fmap(fn func([]byte, *config.ServiceConfig) ([]byte, error)) PackHandler {
-	nb, err := fn(phi.b, phi.sc)
-	if err != nil {
-	}
-
-	return packHandlerImpl{b: nb}
+    nb, err := fn(phi.b, phi.sc)
+    if err != nil {
+        // Preserve previous state on error
+        return packHandlerImpl{b: phi.b, sc: phi.sc}
+    }
+    return packHandlerImpl{b: nb, sc: phi.sc}
 }
 
 func NewPackHandler(b []byte, sc *config.ServiceConfig) PackHandler {
