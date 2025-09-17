@@ -18,6 +18,23 @@ func ApolloConfig() *apollo.ApolloConfig {
 
 var log logger.Logger
 
+// ConfigReader is a tiny adapter to make Apollo access testable.
+// Only methods used in this file are included.
+type ConfigReader interface {
+    GetString(name string) string
+    GetIntValue(name string, def int) int
+    GetBoolValue(name string, def bool) bool
+}
+
+// cfgReader is consulted by parseAllConfig and getters. Defaults to the real Apollo-backed reader.
+var cfgReader ConfigReader
+
+type apReader struct{}
+
+func (apReader) GetString(name string) string            { return config.GetString(name) }
+func (apReader) GetIntValue(name string, def int) int    { return config.GetIntValue(name, def) }
+func (apReader) GetBoolValue(name string, def bool) bool { return config.GetBoolValue(name, def) }
+
 func LoadApolloConfig(appId string, namespace string, cluster string, address string, logger logger.Logger) Config {
 
 	log = logger
@@ -32,6 +49,9 @@ func LoadApolloConfig(appId string, namespace string, cluster string, address st
 		CacheInterface: *applicationConfig,
 		Namespace:      namespace,
 	}
+
+	// set default reader to real apollo-backed reader
+	cfgReader = apReader{}
 
 	parseAllConfig()
 
@@ -59,11 +79,11 @@ type apolloConfig struct {
 }
 
 func (c *apolloConfig) ServerPort() int {
-	return config.GetIntValue("application.port", 0)
+	return cfgReader.GetIntValue("application.port", 0)
 }
 
 func (c *apolloConfig) ServerName() string {
-	return config.GetString("application.name")
+	return cfgReader.GetString("application.name")
 }
 
 func (c *apolloConfig) ServiceRpcHeaderName() string {
@@ -132,11 +152,11 @@ func (c *apolloConfig) HttpClientMaxIdleConns() int {
 }
 
 func (c *apolloConfig) HttpClientMaxIdleConnsPerHost() int {
-	return config.GetIntValue("httpClient.MaxIdleConnsPerHost", 3000)
+	return cfgReader.GetIntValue("httpClient.MaxIdleConnsPerHost", 3000)
 }
 
 func (c *apolloConfig) FastHttpEnable() bool {
-	return config.GetBoolValue("fastHttp.Enable", false)
+	return cfgReader.GetBoolValue("fastHttp.Enable", false)
 }
 
 var (
@@ -200,7 +220,7 @@ func parseAllConfig() {
 }
 
 func getConfigString(configName string) string {
-	c := config.GetString(configName)
+	c := cfgReader.GetString(configName)
 	if c == "" {
 		log.Error("get failure ... ", "name", configName)
 		panic(fmt.Sprintf("get %s failure", configName))

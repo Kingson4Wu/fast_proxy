@@ -1,5 +1,5 @@
-# fastproxy
-
+![fast_proxy.png](https://raw.githubusercontent.com/Kingson4Wu/fast_proxy/main/resource/img/fast_proxy.png)
+---
 ![fast_proxy_ico.png](https://raw.githubusercontent.com/Kingson4Wu/fast_proxy/main/resource/img/logo.jpg)
 
 [![CI/CD Pipeline](https://github.com/Kingson4Wu/fast_proxy/actions/workflows/go.yml/badge.svg)](https://github.com/Kingson4Wu/fast_proxy/actions/workflows/go.yml)

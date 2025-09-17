@@ -19,3 +19,4 @@ coverage.txt
 outproxy.test
 inproxy.test
 mem.pprof
+*.out

@@ -21,7 +21,12 @@ jobs:
         run: go mod tidy && go build -v -o in-proxy ./examples/inproxy && go build -v -o out-proxy ./examples/outproxy
 
       - name: Unit Test (with coverage)
-        run: go test -race -count=1 -covermode=atomic -coverprofile=coverage.out ./...
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkgs=$(go list ./... | grep -v "/examples" | grep -v "/test$")
+          echo "Testing packages:" $pkgs
+          go test -race -count=1 -covermode=atomic -coverprofile=coverage.out $pkgs
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

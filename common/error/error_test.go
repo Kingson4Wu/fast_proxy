@@ -6,10 +6,19 @@ import (
 )
 
 func TestError_Error(t *testing.T) {
+	// Test error without cause
 	err := New(50001, CategoryInternal, "test error")
 	expected := "[internal:50001] test error"
 	if err.Error() != expected {
 		t.Errorf("Expected %s, got %s", expected, err.Error())
+	}
+
+	// Test error with cause
+	cause := errors.New("original error")
+	wrappedErr := Wrap(cause, 50001, CategoryInternal, "wrapped error")
+	expected = "[internal:50001] wrapped error: original error"
+	if wrappedErr.Error() != expected {
+		t.Errorf("Expected %s, got %s", expected, wrappedErr.Error())
 	}
 }
 
@@ -75,6 +84,94 @@ func TestError_MarshalJSON(t *testing.T) {
 		if !containsString(string(jsonData), substring) {
 			t.Errorf("Expected JSON to contain %s, got %s", substring, string(jsonData))
 		}
+	}
+}
+
+func TestError_Unwrap(t *testing.T) {
+	cause := errors.New("original error")
+	err := Wrap(cause, 50001, CategoryInternal, "wrapped error")
+
+	unwrapped := err.Unwrap()
+	if unwrapped != cause {
+		t.Errorf("Expected unwrapped error to be cause, got %v", unwrapped)
+	}
+
+	// Test unwrapping an error without cause
+	errWithoutCause := New(50001, CategoryInternal, "test error")
+	unwrapped = errWithoutCause.Unwrap()
+	if unwrapped != nil {
+		t.Errorf("Expected unwrapped error to be nil, got %v", unwrapped)
+	}
+}
+
+func TestError_WithStack(t *testing.T) {
+	err := New(50001, CategoryInternal, "test error")
+
+	stackTrace := "goroutine 1 [running]:\nmain.main()"
+	result := err.WithStack(stackTrace)
+
+	if result.Stack != stackTrace {
+		t.Errorf("Expected stack to be %s, got %v", stackTrace, result.Stack)
+	}
+
+	// Verify that the method returns the same error instance
+	if result != err {
+		t.Error("Expected WithStack to return the same error instance")
+	}
+}
+
+func TestNew(t *testing.T) {
+	err := New(50001, CategoryInternal, "test error")
+
+	if err.Code != 50001 {
+		t.Errorf("Expected code to be 50001, got %d", err.Code)
+	}
+
+	if err.Category != CategoryInternal {
+		t.Errorf("Expected category to be internal, got %s", err.Category)
+	}
+
+	if err.Message != "test error" {
+		t.Errorf("Expected message to be 'test error', got %s", err.Message)
+	}
+
+	// Verify that context map is initialized
+	if err.Context == nil {
+		t.Error("Expected context map to be initialized")
+	}
+
+	if len(err.Context) != 0 {
+		t.Errorf("Expected context map to be empty, got %d items", len(err.Context))
+	}
+}
+
+func TestWrap(t *testing.T) {
+	cause := errors.New("original error")
+	err := Wrap(cause, 50001, CategoryInternal, "wrapped error")
+
+	if err.Code != 50001 {
+		t.Errorf("Expected code to be 50001, got %d", err.Code)
+	}
+
+	if err.Category != CategoryInternal {
+		t.Errorf("Expected category to be internal, got %s", err.Category)
+	}
+
+	if err.Message != "wrapped error" {
+		t.Errorf("Expected message to be 'wrapped error', got %s", err.Message)
+	}
+
+	if err.Cause != cause {
+		t.Errorf("Expected cause to be the original error, got %v", err.Cause)
+	}
+
+	// Verify that context map is initialized
+	if err.Context == nil {
+		t.Error("Expected context map to be initialized")
+	}
+
+	if len(err.Context) != 0 {
+		t.Errorf("Expected context map to be empty, got %d items", len(err.Context))
 	}
 }
 

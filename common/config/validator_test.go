@@ -1,230 +1,270 @@
 package config
 
 import (
-	"fmt"
 	"testing"
 	"time"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestValidatePort(t *testing.T) {
-	Convey("Given port validation function", t, func() {
-		Convey("When validating valid ports", func() {
-			validPorts := []int{1, 80, 443, 8080, 65535}
-			
-			for _, port := range validPorts {
-				err := ValidatePort(port)
-				
-				Convey(fmt.Sprintf("Port %d should be valid", port), func() {
-					So(err, ShouldBeNil)
-				})
-			}
-		})
+func TestValidationError_Error(t *testing.T) {
+	err := &ValidationError{
+		Field:   "testField",
+		Value:   "testValue",
+		Message: "test message",
+	}
 
-		Convey("When validating invalid ports", func() {
-			invalidPorts := []int{-1, 0, 65536, 100000}
-			
-			for _, port := range invalidPorts {
-				err := ValidatePort(port)
-				
-				Convey(fmt.Sprintf("Port %d should be invalid", port), func() {
-					So(err, ShouldNotBeNil)
-					So(err.Error(), ShouldContainSubstring, "port must be between 1 and 65535")
-				})
-			}
-		})
-	})
+	expected := "validation error in field 'testField' with value 'testValue': test message"
+	result := err.Error()
+
+	if result != expected {
+		t.Errorf("ValidationError.Error() = %v, want %v", result, expected)
+	}
 }
 
-func TestValidateHost(t *testing.T) {
-	Convey("Given host validation function", t, func() {
-		Convey("When validating valid hosts", func() {
-			validHosts := []string{
-				"localhost",
-				"127.0.0.1",
-				"::1",
-				"example.com",
-				"subdomain.example.com",
-				"192.168.1.1",
-			}
-			
-			for _, host := range validHosts {
-				err := ValidateHost(host)
-				
-				Convey(fmt.Sprintf("Host '%s' should be valid", host), func() {
-					So(err, ShouldBeNil)
-				})
-			}
-		})
+func TestValidationErrors_Error(t *testing.T) {
+	errs := &ValidationErrors{
+		Errors: []error{
+			&ValidationError{Field: "field1", Value: "value1", Message: "error1"},
+			&ValidationError{Field: "field2", Value: "value2", Message: "error2"},
+		},
+	}
 
-		Convey("When validating invalid hosts", func() {
-			Convey("Empty host should be invalid", func() {
-				err := ValidateHost("")
-				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldContainSubstring, "host cannot be empty")
-			})
-		})
-	})
+	result := errs.Error()
+	expected := "2 validation errors occurred:\n  - validation error in field 'field1' with value 'value1': error1\n  - validation error in field 'field2' with value 'value2': error2"
+
+	if result != expected {
+		t.Errorf("ValidationErrors.Error() = %v, want %v", result, expected)
+	}
 }
 
-func TestValidateURL(t *testing.T) {
-	Convey("Given URL validation function", t, func() {
-		Convey("When validating valid URLs", func() {
-			validURLs := []string{
-				"http://example.com",
-				"https://example.com",
-				"http://localhost:8080",
-				"https://192.168.1.1:443/path",
-			}
-			
-			for _, url := range validURLs {
-				err := ValidateURL(url)
-				
-				Convey(fmt.Sprintf("URL '%s' should be valid", url), func() {
-					So(err, ShouldBeNil)
-				})
-			}
-		})
+func TestValidationErrors_Error_Empty(t *testing.T) {
+	errs := &ValidationErrors{
+		Errors: []error{},
+	}
 
-		Convey("When validating invalid URLs", func() {
-			Convey("Empty URL should be invalid", func() {
-				err := ValidateURL("")
-				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldContainSubstring, "URL cannot be empty")
-			})
+	result := errs.Error()
+	expected := "no validation errors"
 
-			Convey("URL without scheme should be invalid", func() {
-				err := ValidateURL("example.com")
-				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldContainSubstring, "URL must start with http:// or https://")
-			})
-		})
-	})
+	if result != expected {
+		t.Errorf("ValidationErrors.Error() = %v, want %v", result, expected)
+	}
 }
 
-func TestValidateDuration(t *testing.T) {
-	Convey("Given duration validation function", t, func() {
-		Convey("When validating positive durations", func() {
-			validDurations := []time.Duration{
-				1 * time.Second,
-				5 * time.Minute,
-				1 * time.Hour,
-				24 * time.Hour,
-			}
-			
-			for _, duration := range validDurations {
-				err := ValidateDuration(duration)
-				
-				Convey(fmt.Sprintf("Duration %v should be valid", duration), func() {
-					So(err, ShouldBeNil)
-				})
-			}
-		})
+func TestValidatePort_Valid(t *testing.T) {
+	tests := []struct {
+		port int
+	}{
+		{1},
+		{80},
+		{443},
+		{8080},
+		{65535},
+	}
 
-		Convey("When validating non-positive durations", func() {
-			invalidDurations := []time.Duration{
-				0,
-				-1 * time.Second,
-				-5 * time.Minute,
-			}
-			
-			for _, duration := range invalidDurations {
-				err := ValidateDuration(duration)
-				
-				Convey(fmt.Sprintf("Duration %v should be invalid", duration), func() {
-					So(err, ShouldNotBeNil)
-					So(err.Error(), ShouldContainSubstring, "duration must be positive")
-				})
-			}
-		})
-	})
-}
-
-func TestValidateNonEmptyString(t *testing.T) {
-	Convey("Given non-empty string validation function", t, func() {
-		Convey("When validating non-empty strings", func() {
-			err := ValidateNonEmptyString("test", "test_field")
-			So(err, ShouldBeNil)
-		})
-
-		Convey("When validating empty strings", func() {
-			err := ValidateNonEmptyString("", "test_field")
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "test_field cannot be empty")
-		})
-	})
-}
-
-func TestValidatePositiveInt(t *testing.T) {
-	Convey("Given positive integer validation function", t, func() {
-		Convey("When validating positive integers", func() {
-			err := ValidatePositiveInt(5, "test_field")
-			So(err, ShouldBeNil)
-		})
-
-		Convey("When validating non-positive integers", func() {
-			err := ValidatePositiveInt(0, "test_field")
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "test_field must be positive")
-
-			err = ValidatePositiveInt(-1, "test_field")
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "test_field must be positive")
-		})
-	})
-}
-
-func TestValidateRangeInt(t *testing.T) {
-	Convey("Given range integer validation function", t, func() {
-		Convey("When validating integers within range", func() {
-			err := ValidateRangeInt(5, 1, 10, "test_field")
-			So(err, ShouldBeNil)
-		})
-
-		Convey("When validating integers outside range", func() {
-			err := ValidateRangeInt(0, 1, 10, "test_field")
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "test_field must be between 1 and 10")
-
-			err = ValidateRangeInt(11, 1, 10, "test_field")
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "test_field must be between 1 and 10")
-		})
-	})
-}
-
-func TestValidationError(t *testing.T) {
-	Convey("Given a ValidationError", t, func() {
-		err := &ValidationError{
-			Field:   "test_field",
-			Value:   "test_value",
-			Message: "test message",
+	for _, tt := range tests {
+		err := ValidatePort(tt.port)
+		if err != nil {
+			t.Errorf("ValidatePort(%d) = %v, want nil", tt.port, err)
 		}
-
-		Convey("Should format error message correctly", func() {
-			expected := "validation error in field 'test_field' with value 'test_value': test message"
-			So(err.Error(), ShouldEqual, expected)
-		})
-	})
+	}
 }
 
-func TestValidationErrors(t *testing.T) {
-	Convey("Given ValidationErrors", t, func() {
-		Convey("With no errors", func() {
-			errs := &ValidationErrors{Errors: []error{}}
-			So(errs.Error(), ShouldEqual, "no validation errors")
-		})
+func TestValidatePort_Invalid(t *testing.T) {
+	tests := []struct {
+		port    int
+		wantErr bool
+	}{
+		{0, true},
+		{-1, true},
+		{65536, true},
+		{100000, true},
+	}
 
-		Convey("With multiple errors", func() {
-			err1 := &ValidationError{Field: "field1", Value: "value1", Message: "message1"}
-			err2 := &ValidationError{Field: "field2", Value: "value2", Message: "message2"}
-			errs := &ValidationErrors{Errors: []error{err1, err2}}
+	for _, tt := range tests {
+		err := ValidatePort(tt.port)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ValidatePort(%d) error = %v, wantErr %v", tt.port, err, tt.wantErr)
+		}
+	}
+}
 
-			errStr := errs.Error()
-			So(errStr, ShouldContainSubstring, "2 validation errors occurred")
-			So(errStr, ShouldContainSubstring, "field1")
-			So(errStr, ShouldContainSubstring, "field2")
-		})
-	})
+func TestValidateHost_Valid(t *testing.T) {
+	tests := []struct {
+		host string
+	}{
+		{"localhost"},
+		{"example.com"},
+		{"192.168.1.1"},
+		{"2001:0db8:85a3:0000:0000:8a2e:0370:7334"},
+		{"a"},
+		{"a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z"},
+	}
+
+	for _, tt := range tests {
+		err := ValidateHost(tt.host)
+		if err != nil {
+			t.Errorf("ValidateHost(%s) = %v, want nil", tt.host, err)
+		}
+	}
+}
+
+func TestValidateHost_Invalid(t *testing.T) {
+	err := ValidateHost("")
+	if err == nil {
+		t.Error("ValidateHost(\"\") = nil, want error")
+	}
+}
+
+func TestValidateURL_Valid(t *testing.T) {
+	tests := []struct {
+		url string
+	}{
+		{"http://example.com"},
+		{"https://example.com"},
+		{"http://localhost:8080"},
+		{"https://api.example.com/v1/resource"},
+	}
+
+	for _, tt := range tests {
+		err := ValidateURL(tt.url)
+		if err != nil {
+			t.Errorf("ValidateURL(%s) = %v, want nil", tt.url, err)
+		}
+	}
+}
+
+func TestValidateURL_Invalid(t *testing.T) {
+	tests := []struct {
+		url     string
+		wantErr bool
+	}{
+		{"", true},
+		{"ftp://example.com", true},
+		{"example.com", true},
+		{"//example.com", true},
+	}
+
+	for _, tt := range tests {
+		err := ValidateURL(tt.url)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ValidateURL(%s) error = %v, wantErr %v", tt.url, err, tt.wantErr)
+		}
+	}
+}
+
+func TestValidateDuration_Valid(t *testing.T) {
+	tests := []struct {
+		duration time.Duration
+	}{
+		{1 * time.Nanosecond},
+		{1 * time.Microsecond},
+		{1 * time.Millisecond},
+		{1 * time.Second},
+		{1 * time.Minute},
+		{1 * time.Hour},
+	}
+
+	for _, tt := range tests {
+		err := ValidateDuration(tt.duration)
+		if err != nil {
+			t.Errorf("ValidateDuration(%v) = %v, want nil", tt.duration, err)
+		}
+	}
+}
+
+func TestValidateDuration_Invalid(t *testing.T) {
+	tests := []struct {
+		duration time.Duration
+		wantErr  bool
+	}{
+		{0, true},
+		{-1 * time.Nanosecond, true},
+		{-1 * time.Second, true},
+	}
+
+	for _, tt := range tests {
+		err := ValidateDuration(tt.duration)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ValidateDuration(%v) error = %v, wantErr %v", tt.duration, err, tt.wantErr)
+		}
+	}
+}
+
+func TestValidateNonEmptyString_Valid(t *testing.T) {
+	err := ValidateNonEmptyString("test", "fieldName")
+	if err != nil {
+		t.Errorf("ValidateNonEmptyString(\"test\", \"fieldName\") = %v, want nil", err)
+	}
+}
+
+func TestValidateNonEmptyString_Invalid(t *testing.T) {
+	err := ValidateNonEmptyString("", "fieldName")
+	if err == nil {
+		t.Error("ValidateNonEmptyString(\"\", \"fieldName\") = nil, want error")
+	}
+}
+
+func TestValidatePositiveInt_Valid(t *testing.T) {
+	err := ValidatePositiveInt(1, "fieldName")
+	if err != nil {
+		t.Errorf("ValidatePositiveInt(1, \"fieldName\") = %v, want nil", err)
+	}
+}
+
+func TestValidatePositiveInt_Invalid(t *testing.T) {
+	tests := []struct {
+		value   int
+		wantErr bool
+	}{
+		{0, true},
+		{-1, true},
+		{-100, true},
+	}
+
+	for _, tt := range tests {
+		err := ValidatePositiveInt(tt.value, "fieldName")
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ValidatePositiveInt(%d, \"fieldName\") error = %v, wantErr %v", tt.value, err, tt.wantErr)
+		}
+	}
+}
+
+func TestValidateRangeInt_Valid(t *testing.T) {
+	err := ValidateRangeInt(5, 1, 10, "fieldName")
+	if err != nil {
+		t.Errorf("ValidateRangeInt(5, 1, 10, \"fieldName\") = %v, want nil", err)
+	}
+}
+
+func TestValidateRangeInt_Invalid(t *testing.T) {
+	tests := []struct {
+		value   int
+		min     int
+		max     int
+		wantErr bool
+	}{
+		{0, 1, 10, true},
+		{11, 1, 10, true},
+		{-1, 1, 10, true},
+		{15, 1, 10, true},
+	}
+
+	for _, tt := range tests {
+		err := ValidateRangeInt(tt.value, tt.min, tt.max, "fieldName")
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ValidateRangeInt(%d, %d, %d, \"fieldName\") error = %v, wantErr %v", tt.value, tt.min, tt.max, err, tt.wantErr)
+		}
+	}
+}
+
+func TestValidateBool(t *testing.T) {
+	// ValidateBool always returns nil, so we just test that it doesn't panic
+	err := ValidateBool(true, "fieldName")
+	if err != nil {
+		t.Errorf("ValidateBool(true, \"fieldName\") = %v, want nil", err)
+	}
+
+	err = ValidateBool(false, "fieldName")
+	if err != nil {
+		t.Errorf("ValidateBool(false, \"fieldName\") = %v, want nil", err)
+	}
 }

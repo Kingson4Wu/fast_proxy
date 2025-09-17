@@ -83,7 +83,7 @@ func (c *mockOutConfig) HttpClientMaxIdleConnsPerHost() int {
 }
 
 func (c *mockOutConfig) FastHttpEnable() bool {
-	return false
+    return true
 }
 
 func (c *mockOutConfig) ForwardAddress() string {
