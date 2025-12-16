@@ -1,0 +1,187 @@
+---
+sidebar_position: 5
+---
+
+# Performance & Optimization
+
+FastProxy is designed for high-performance operation in production environments. It leverages the fasthttp library for efficient request handling and provides various configuration options to optimize performance.
+
+## Performance Characteristics
+
+### Benchmarks
+
+Actual performance of FastProxy depends heavily on:
+
+- **Hardware specifications**: CPU speed, memory, network
+- **Request patterns**: Size, frequency, and complexity of requests
+- **Processing pipeline**: Encryption, signing, and compression settings
+- **Network conditions**: Latency to upstream services
+
+Typical benchmarks show:
+- **Throughput**: 10K-100K+ requests per second depending on configuration
+- **Latency**: Single-digit millisecond overhead with heavy processing enabled
+- **Memory**: ~20MB baseline memory usage with efficient allocation patterns
+- **Concurrency**: Thousands of concurrent connections handled efficiently
+
+### Optimizations
+
+FastProxy incorporates several performance optimizations:
+
+- **FastHTTP integration**: Uses the fasthttp library for high-performance HTTP handling
+- **Efficient crypto operations**: Optimized AES-GCM and ChaCha20-Poly1305 implementations
+- **Buffer pooling**: Reuses buffers to minimize allocations
+- **Smart compression**: Selective compression based on content size and type
+- **Connection reuse**: Keeps persistent connections to upstream services
+
+## Configuration for Performance
+
+### FastHTTP Settings
+
+Enable FastHTTP in your configuration for significantly improved performance:
+
+```yaml
+fastHttp:
+  enable: true
+  maxConnsPerHost: 3000           # Maximum connections per destination host
+  maxIdleConnDuration: "30s"      # How long to keep idle connections alive
+  readBufferSize: 4096           # Size of request header reader buffer
+  writeBufferSize: 4096          # Size of response header writer buffer
+```
+
+### HTTP Client Configuration
+
+Optimize HTTP client behavior for upstream connections:
+
+```yaml
+httpClient:
+  MaxIdleConns: 5000              # Maximum idle connections in the pool
+  MaxIdleConnsPerHost: 3000       # Maximum idle connections per host
+  IdleConnTimeout: "90s"          # How long to keep idle connections alive
+  ResponseHeaderTimeout: "10s"    # Timeout for response headers
+  DisableKeepAlives: false        # Reuse connections when possible
+```
+
+### Service-Specific Tuning
+
+Configure per-service performance parameters:
+
+```yaml
+serviceCallTypeConfig:
+  service_name:
+    /api/endpoint:
+      callType: 1        # 1: direct call, 2: forwarded call
+      qps: 1000         # Queries per second limit
+      timeout: 5000     # Request timeout in milliseconds
+      limit: 2000       # Connection limit
+```
+
+### Encryption Performance
+
+Encryption settings affect performance significantly:
+
+- AES-GCM provides good performance and security
+- ChaCha20-Poly1305 performs better on ARM processors
+- Encryption is typically the biggest performance factor
+- Consider selective encryption by service based on sensitivity
+
+## Performance Tuning Strategies
+
+### Enable FastHTTP
+
+For high-throughput deployments, FastHTTP is essential:
+
+- Lower memory allocation per request
+- Faster HTTP parsing than standard Go HTTP
+- Better concurrency handling
+
+### Connection Management
+
+Optimize connection handling for your workload:
+
+- Increase `MaxIdleConns` and `MaxIdleConnsPerHost` for high RPS
+- Set appropriate timeouts to balance resource usage and responsiveness
+- Monitor connection pool utilization to adjust parameters
+
+### Compression Optimization
+
+FastProxy automatically compresses responses when enabled:
+
+- Enable compression for text-based content (JSON, HTML, CSS, JS)
+- Consider payload sizes - small payloads don't benefit from compression
+- Choose appropriate compression levels for CPU vs bandwidth trade-off
+
+### Rate Limiting
+
+Implement per-service rate limiting to prevent individual services from overwhelming the system:
+
+- Set appropriate QPS limits based on upstream service capacity
+- Use different limits for different endpoints based on complexity
+- Monitor for rejected requests to adjust limits appropriately
+
+## Monitoring Performance
+
+### Built-in Metrics
+
+While FastProxy doesn't expose extensive statistics directly, you can monitor:
+
+- Standard server metrics (requests served, connection count)
+- Request timing and error rates
+- Throughput and latency measurements
+
+### Logging Performance
+
+Enable detailed logging in development and testing:
+
+```yaml
+logging:
+  level: "debug"  # Change to "info" in production
+  format: "json"  # More structured for log aggregation
+```
+
+### Profiling
+
+The system includes Go's built-in profiler:
+
+- pprof endpoints are available via the imported net/http/pprof
+- Can analyze CPU usage, memory allocations, and goroutine usage
+- Helps identify performance bottlenecks and memory leaks
+
+## Best Practices
+
+### Production Setup
+
+For optimal performance in production:
+
+1. **Enable FastHTTP** - This alone provides significant performance improvement
+2. **Configure connection pools** with appropriate sizes
+3. **Use efficient encryption algorithms** (AES-GCM is recommended)
+4. **Monitor resource usage** to identify scaling limits
+5. **Set reasonable timeouts** to avoid resource accumulation
+6. **Use connection persistence** to reduce handshake overhead
+
+### Security vs Performance Trade-offs
+
+Balance security and performance by considering:
+
+- Encryption/decryption overhead vs security requirements
+- Signature verification frequency vs integrity needs
+- Compression benefits vs CPU cost
+- Connection persistence vs resource usage
+
+### Performance Testing
+
+When evaluating performance:
+
+1. **Test with realistic payloads** and request patterns
+2. **Measure both average and percentiles** (95th, 99th) for latencies
+3. **Validate performance under various load conditions**
+4. **Monitor resource usage** (CPU, memory, goroutines) to identify bottlenecks
+5. **Test with actual upstream services** to include network overhead
+
+### Scaling Considerations
+
+FastProxy scales primarily through:
+
+- **Horizontal scaling**: Adding more proxy instances behind a load balancer
+- **Vertical scaling**: Increasing resources on the current machine
+- **Efficient resource utilization**: Tuning connection and buffer settings

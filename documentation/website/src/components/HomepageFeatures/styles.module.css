@@ -1,0 +1,13 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 4rem 0;
+  width: 100%;
+  background-color: #f9f9f9;
+}
+
+.featureSvg {
+  height: 200px;
+  width: 200px;
+  margin-bottom: 1rem;
+}

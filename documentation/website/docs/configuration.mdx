@@ -1,0 +1,163 @@
+---
+sidebar_position: 3
+---
+
+# Configuration Guide
+
+FastProxy uses a YAML-based configuration system with support for multiple configuration sources. The configuration structure is based on actual implementation found in the `common/config`, `inproxy/inconfig`, and `outproxy/outconfig` packages.
+
+## Configuration Structure
+
+The main configuration contains these key sections:
+
+```yaml
+# Proxy settings
+proxy:
+  forwardAddress: http://127.0.0.1:9833/inProxy  # Address to forward requests to
+
+# Application settings
+application:
+  name: in_proxy      # Service name
+  port: 8033          # Port to listen on
+  contextPath: /inProxy  # Context path for the service
+
+# RPC configuration
+rpc:
+  serviceHeaderName: C_ServiceName  # Header name for service identification
+
+# Service-specific configurations
+serviceConfig:
+  song_service:
+    encryptKeyName: encrypt.key.room.v2   # Name of the encryption key to use
+    signKeyName: sign.key.room.v1        # Name of the signing key to use
+    encryptEnable: true                   # Enable encryption
+    signEnable: true                      # Enable signing
+    compressEnable: true                  # Enable compression
+
+# Key configurations
+signKeyConfig:
+  sign.key.room.v1: abcd   # Signing key values
+  sign.key.room.v2: abcd
+
+encryptKeyConfig:
+  encrypt.key.room.v1: ABCDABCDABCDABCDW  # Encryption key values
+  encrypt.key.room.v2: ABCDABCDABCDABCD
+
+# Service call type configurations
+serviceCallTypeConfig:
+  song_service:
+    /token_service/api/service:
+      callType: 1    # Type of call (1 = direct, 2 = forward)
+      qps: 10        # Queries per second limit
+
+# HTTP client settings
+httpClient:
+  MaxIdleConns: 5000           # Maximum idle connections in pool
+  MaxIdleConnsPerHost: 3000    # Maximum idle connections per host
+
+# FastHTTP settings
+fastHttp:
+  enable: true    # Enable FastHTTP for improved performance
+```
+
+## Common Configuration Elements
+
+The `common` package defines the base configuration interface with these key methods:
+
+- `ServerName()` - Returns the service name
+- `ServerPort()` - Returns the server port
+- `ServiceRpcHeaderName()` - Returns the header name used to identify service
+- `GetServiceConfig(serviceName string)` - Gets configuration for a specific service
+- `GetTimeoutConfigByName(name string, uri string)` - Gets timeout configuration for specific endpoints
+- `HttpClientMaxIdleConns()` - Gets HTTP client max idle connections
+- `FastHttpEnable()` - Whether to enable FastHTTP
+
+## InProxy Configuration
+
+The `inproxy` package handles incoming traffic and accepts a configuration implementing the `inconfig.Config` interface with methods:
+
+- `ServerContextPath()` - Returns the server's context path
+- `GetCallTypeConfigByName(name string, uri string)` - Gets call type config
+- `ServiceQps(name string, uri string)` - Gets QPS limit for service
+- `ContainsCallPrivilege(name string, uri string)` - Checks if call has privilege
+
+## OutProxy Configuration
+
+The `outproxy` package handles outgoing traffic and accepts a configuration implementing the `outconfig.Config` interface with methods:
+
+- `ForwardAddress()` - Returns the address to forward requests to
+
+## Encryption Configuration
+
+Encryption is configured using the `encrypt` package with these settings in the service configuration:
+
+- `encryptKeyName` - Name of the encryption key to use
+- `encryptEnable` - Whether to enable encryption
+- The actual encryption keys are defined in `encryptKeyConfig`
+
+## Signing Configuration
+
+Signing is configured using the `sign` package with these settings:
+
+- `signKeyName` - Name of the signing key to use
+- `signEnable` - Whether to enable signing
+- The actual signing keys are defined in `signKeyConfig`
+
+## Compression Configuration
+
+Compression is handled by the `compress` package:
+
+- `compressEnable` - Whether to enable compression
+- Uses FastHTTP's built-in compression for performance
+
+## Apollo Configuration Center Integration
+
+FastProxy includes built-in support for Apollo Configuration Center:
+
+```yaml
+apollo:
+  apolloAddr: "http://your-apollo-server:8080"  # Apollo server address
+  appId: "fastproxy"                            # Application ID
+  cluster: "default"                           # Cluster name
+  namespaceName: "application"                 # Namespace
+```
+
+To use Apollo configuration:
+
+```go
+import "github.com/Kingson4Wu/fast_proxy/common/apollo"
+
+// Initialize Apollo configuration
+apollo.InitApolloConfig(&apollo.Config{
+    ApolloAddr: "http://your-apollo-server:8080",
+    AppID:      "fastproxy",
+    Cluster:    "default",
+    NamespaceName: "application",
+})
+```
+
+## Service Call Type Configuration
+
+Services can be configured with specific call types and QPS limits:
+
+```yaml
+serviceCallTypeConfig:
+  service_name:
+    /api/endpoint:
+      callType: 1    # 1: direct call, 2: forwarded call
+      qps: 1000      # Queries per second limit
+      timeout: 5000  # Timeout in milliseconds
+      limit: 2000    # Connection limit
+```
+
+## HTTP Client Configuration
+
+Fine-tune the HTTP client behavior:
+
+```yaml
+httpClient:
+  MaxIdleConns: 5000           # Total max idle connections
+  MaxIdleConnsPerHost: 3000    # Max idle connections per host
+  IdleConnTimeout: "90s"       # How long to keep idle connections alive
+  ResponseHeaderTimeout: "10s" # Timeout for response headers
+```

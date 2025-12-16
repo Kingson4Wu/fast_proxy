@@ -1,0 +1,21 @@
+{
+  "name": "FastProxy Documentation",
+  "short_name": "FastProxy Docs",
+  "description": "Documentation for FastProxy - A Go Blueprint for Enterprise-Grade Service Proxies",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2e8555",
+  "icons": [
+    {
+      "src": "/img/fast_proxy.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/fast_proxy.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

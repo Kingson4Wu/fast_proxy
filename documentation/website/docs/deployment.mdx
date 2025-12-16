@@ -1,0 +1,336 @@
+---
+sidebar_position: 6
+---
+
+# Deployment & Operations
+
+This guide covers deployment strategies and operational considerations for running FastProxy in production environments.
+
+## Building and Deploying
+
+### Build from Source
+
+FastProxy provides Makefile targets to build the components:
+
+```bash
+# Download dependencies and build all components
+make
+
+# This creates the executables:
+# - center
+# - server
+# - in-proxy
+# - out-proxy
+# - client
+```
+
+### Docker Deployment
+
+Containerize FastProxy components for consistent deployments:
+
+```dockerfile
+# Dockerfile for in-proxy
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+COPY . .
+RUN go mod download
+RUN go build -o in-proxy ./examples/inproxy/main.go
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/in-proxy .
+COPY --from=builder /app/examples/inproxy/config.yaml ./config.yaml
+
+EXPOSE 8033
+CMD ["./in-proxy"]
+```
+
+### Binary Deployment
+
+The built binaries can be deployed directly:
+
+```bash
+# Deploy in-proxy
+scp in-proxy server:/opt/fastproxy/
+scp config.yaml server:/opt/fastproxy/
+
+# Start the service
+/opt/fastproxy/in-proxy
+```
+
+## Deployment Patterns
+
+### Embedded Mode
+
+Integrate FastProxy directly into your Go application:
+
+```go
+package main
+
+import (
+    "github.com/Kingson4Wu/fast_proxy/inproxy"
+    "github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
+)
+
+func main() {
+    // Load configuration from YAML
+    config := inconfig.LoadYamlConfig(configBytes)
+
+    // Start the proxy server
+    inproxy.NewServer(config)
+}
+```
+
+### Sidecar Mode
+
+Deploy FastProxy as a separate process alongside your application:
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Application   │◄──►│   FastProxy     │
+│                 │    │   (sidecar)     │
+└─────────────────┘    └─────────────────┘
+```
+
+Application communicates with FastProxy over localhost, and FastProxy handles all external communication with encryption/signing.
+
+### Dedicated Proxy Cluster
+
+Deploy FastProxy components separately:
+
+- `in-proxy` instances handle incoming traffic
+- `out-proxy` instances handle outgoing traffic
+- `center` manages service discovery coordination
+
+### Standalone Mode
+
+Run each component as a separate service:
+
+```bash
+# Start center component (if using service discovery)
+./center &
+
+# Start out-proxy component
+./out-proxy &
+
+# Start in-proxy component
+./in-proxy &
+```
+
+## Configuration Management
+
+### Static Configuration (YAML)
+
+Default configuration method using YAML files:
+
+```yaml
+proxy:
+  forwardAddress: http://127.0.0.1:9833/inProxy
+
+application:
+  name: in_proxy
+  port: 8033
+  contextPath: /inProxy
+
+rpc:
+  serviceHeaderName: C_ServiceName
+
+serviceConfig:
+  song_service:
+    encryptKeyName: encrypt.key.room.v2
+    signKeyName: sign.key.room.v1
+    encryptEnable: true
+    signEnable: true
+    compressEnable: true
+
+signKeyConfig:
+  sign.key.room.v1: abcd
+  sign.key.room.v2: abcd
+
+encryptKeyConfig:
+  encrypt.key.room.v1: ABCDABCDABCDABCDW
+  encrypt.key.room.v2: ABCDABCDABCDABCD
+
+serviceCallTypeConfig:
+  song_service:
+    /token_service/api/service:
+      callType: 1
+      qps: 10
+
+httpClient:
+  MaxIdleConns: 5000
+  MaxIdleConnsPerHost: 3000
+
+fastHttp:
+  enable: true
+```
+
+### Dynamic Configuration (Apollo)
+
+For dynamic configuration updates, FastProxy supports Apollo Configuration Center:
+
+```go
+import "github.com/Kingson4Wu/fast_proxy/common/apollo"
+
+// Initialize Apollo configuration
+apolloConfig := &apollo.Config{
+    ApolloAddr:    "http://your-apollo-server:8080",
+    AppID:         "fastproxy",
+    Cluster:       "default",
+    NamespaceName: "application",
+}
+
+apollo.InitApolloConfig(apolloConfig)
+```
+
+Configuration parameters for Apollo:
+
+```yaml
+apollo:
+  apolloAddr: "http://your-apollo-server:8080"
+  appId: "fastproxy"
+  cluster: "default"
+  namespaceName: "application"
+  refreshInterval: "5s"  # How often to check for updates
+```
+
+## Service Configuration
+
+### Per-Service Settings
+
+Configure different security policies per service:
+
+```yaml
+serviceConfig:
+  # Highly sensitive service with full security
+  critical_api:
+    encryptKeyName: critical.encrypt.key
+    signKeyName: critical.sign.key
+    encryptEnable: true
+    signEnable: true
+    compressEnable: true
+
+  # Public service with integrity but no encryption
+  public_api:
+    encryptKeyName: public.encrypt.key
+    signKeyName: public.sign.key
+    encryptEnable: false  # No encryption needed
+    signEnable: true      # But still sign for integrity
+    compressEnable: true
+```
+
+### Rate Limiting
+
+Configure rate limits per service and endpoint:
+
+```yaml
+serviceCallTypeConfig:
+  service_name:
+    /api/endpoint:
+      callType: 1     # 1: direct call, 2: forwarded call
+      qps: 1000      # Queries per second limit
+      timeout: 5000  # Request timeout in milliseconds
+      limit: 2000    # Connection limit
+```
+
+## Operational Procedures
+
+### Startup Sequence
+
+For a complete FastProxy deployment, follow this startup order:
+
+1. If using service discovery: Start `center` component first
+2. Start `out-proxy` components
+3. Start `in-proxy` components
+4. Start your upstream services
+
+### Health Monitoring
+
+Monitor these key metrics:
+
+- Response times for different services
+- Error rates and failure patterns
+- Resource utilization (CPU, memory, connections)
+- Successful encryption/decryption operations
+- Proper signing/verification operations
+
+### Log Analysis
+
+FastProxy uses structured logging via Zap. Monitor logs for:
+- Successful request forwarding
+- Encryption/decryption success/failure
+- Signing/verification success/failure
+- Service discovery registration status
+
+## Security Considerations
+
+### Key Management
+
+Handle encryption and signing keys securely:
+
+- Store keys in secure locations, not in source code
+- Rotate keys regularly to maintain security
+- Use different keys for different services/environments
+- Implement proper access controls for key files and systems
+
+### Network Security
+
+- Use encrypted connections between proxy components
+- Implement proper firewall rules
+- Monitor for unusual traffic patterns
+- Set appropriate timeouts to prevent resource exhaustion
+
+### Configuration Security
+
+- Restrict access to configuration files
+- Use environment-specific configurations
+- Validate configuration values before applying
+- Audit configuration changes
+
+## Scaling Strategies
+
+### Horizontal Scaling
+
+Scale by deploying multiple proxy instances:
+
+- Deploy multiple `in-proxy` instances behind a load balancer
+- Share configurations via Apollo Configuration Center or shared storage
+- Use the `center` component for service discovery coordination
+
+### Vertical Scaling
+
+Increase resources on existing machines:
+
+- More CPU for encryption/decryption operations
+- More memory for connection pooling and buffer management
+- Better network interfaces for improved throughput
+
+## Environment-Specific Configurations
+
+### Development
+
+```yaml
+logging:
+  level: "debug"  # More verbose logging in development
+fastHttp:
+  enable: false   # Can disable FastHTTP for easier debugging initially
+```
+
+### Production
+
+```yaml
+logging:
+  level: "info"   # Less verbose logging for production
+fastHttp:
+  enable: true    # Enable FastHTTP for better performance
+httpClient:
+  MaxIdleConns: 5000           # Higher connection limits
+  MaxIdleConnsPerHost: 3000    # Higher per-host limits
+  IdleConnTimeout: "90s"       # Longer connection persistence
+```
+
+### Testing
+
+Use different configuration sets for testing to validate performance and functionality under various load conditions.

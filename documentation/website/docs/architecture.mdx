@@ -1,0 +1,187 @@
+---
+sidebar_position: 4
+---
+
+# Architecture
+
+## Overview
+
+FastProxy is built with a modular architecture that allows for flexible deployment patterns. The system is divided into distinct components handling different aspects of service proxy functionality:
+
+- **inproxy**: Handles incoming traffic and acts as a reverse proxy
+- **outproxy**: Manages outgoing traffic to upstream services
+- **common**: Shared modules with common functionality
+- **center**: Service discovery and coordination component
+- **examples**: Contains runnable implementations demonstrating usage
+
+## Core Components
+
+### InProxy Component
+
+The `inproxy` component is responsible for handling incoming requests and forwarding them to appropriate services:
+
+- Receives requests from clients on a configured port
+- Verifies digital signatures and decrypts incoming requests if enabled
+- Routes requests to target services based on configuration
+- Encrypts and signs responses before sending back to clients
+- Implements rate limiting and traffic shaping per service configuration
+- Supports both standard HTTP and FastHTTP for performance
+
+### OutProxy Component
+
+The `outproxy` component manages outbound requests to upstream services:
+
+- Forwards requests to destination services specified in configuration
+- Encrypts outgoing requests and adds authentication headers
+- Implements retry logic and circuit breaker patterns
+- Collects performance metrics and response data
+- Handles load balancing across multiple upstream instances
+
+### Common Modules
+
+Shared functionality across all components is provided through the `common` package with these key sub-packages:
+
+- **apollo**: Integration with Apollo Configuration Center for dynamic configuration
+- **auth**: Authentication and authorization utilities
+- **cerror/error**: Custom error types and handling mechanisms
+- **compress**: Data compression utilities using various algorithms
+- **config**: Base configuration interfaces and structures
+- **encrypt**: Encryption and decryption services using AES-GCM and ChaCha20-Poly1305
+- **logger**: Structured logging with Zap integration
+- **network**: Network utilities and connection management
+- **pool**: Resource pooling for efficient memory management
+- **proto**: Protocol buffer definitions for serialization
+- **security**: Security policies and certificate management
+- **server**: Server initialization and lifecycle management
+- **servicediscovery**: Service registration and discovery mechanisms
+- **sign**: Digital signature implementation for data integrity
+
+### Center Component
+
+The `center` component handles service discovery and registration:
+
+- Implements service registration and discovery
+- Manages service metadata and endpoints
+- Coordinates configuration updates across proxy instances
+- Maintains distributed state and service health
+
+## Module Interactions
+
+The core architecture enables different deployment modes:
+
+### InProxy Flow
+
+1. Client sends encrypted/signed request to InProxy
+2. InProxy verifies signatures and decrypts payload
+3. Request is validated against configured service rules
+4. Request is forwarded to the target service
+5. Response is processed, encrypted and signed
+6. Response is returned to the client
+
+### OutProxy Flow
+
+1. InProxy sends request to OutProxy
+2. OutProxy encrypts and signs the request
+3. OutProxy forwards request to target service
+4. Response is received from target service
+5. Response is decrypted and signature validated
+6. Response is sent back to InProxy
+
+### Configuration System
+
+Configuration is loaded via interfaces defined in each component:
+- InProxy uses `inconfig.Config` interface
+- OutProxy uses `outconfig.Config` interface
+- Both rely on common configuration elements from `common/config`
+
+Configuration can be loaded from:
+- YAML files (static configuration)
+- Apollo Configuration Center (dynamic updates)
+- Environment variables (runtime overrides)
+
+## Internal Architecture
+
+### Proxy Server Implementation
+
+The `server` package provides the underlying HTTP server capabilities:
+- Support for both standard Go HTTP and FastHTTP
+- Embedded pprof for performance profiling
+- Lifecycle management and graceful shutdown
+- Service registration with discovery centers
+
+### Security Implementation
+
+Security is applied at multiple levels:
+- **Encryption**: AES-GCM or ChaCha20-Poly1305 for request/response bodies
+- **Signing**: HMAC-SHA256 for data integrity verification
+- **Compression**: Snappy, Gzip, or Brotli to reduce payload sizes
+- **Authentication**: Configurable mechanisms per service
+
+### Performance Features
+
+- FastHTTP integration for high-throughput scenarios
+- Connection pooling and reuse
+- Zero-allocation request processing where possible
+- Efficient buffer management
+
+## Deployment Patterns
+
+### Embedded Mode
+
+FastProxy can be directly embedded in Go applications:
+
+```go
+package main
+
+import (
+    "github.com/Kingson4Wu/fast_proxy/inproxy"
+    "github.com/Kingson4Wu/fast_proxy/inproxy/inconfig"
+)
+
+func main() {
+    // Load configuration from YAML
+    config := inconfig.LoadYamlConfig(yamlBytes)
+
+    // Start the proxy server
+    inproxy.NewServer(config)
+}
+```
+
+### Standalone Mode
+
+Components can be deployed as separate executables:
+- `in-proxy`: Handles incoming traffic
+- `out-proxy`: Handles outgoing traffic
+- `center`: Manages service discovery
+
+```
+Clients → in-proxy ↔ out-proxy → Services
+              ↓
+           center (for discovery)
+```
+
+### Sidecar Mode
+
+Deploy FastProxy as a companion process alongside your application:
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Application   │◄──►│   FastProxy     │
+│                 │    │   (sidecar)     │
+└─────────────────┘    └─────────────────┘
+```
+
+## Configuration Architecture
+
+Services are configured with specific parameters:
+- **Service names**: Used to identify and route requests
+- **Encryption keys**: Named keys for encrypting service traffic
+- **Signing keys**: Named keys for signing service traffic
+- **QPS limits**: Per-service, per-endpoint rate limiting
+- **Call types**: Different handling for different endpoint types
+
+The configuration system handles:
+- Dynamic reloading (with Apollo)
+- Validation of service configurations
+- Encryption/decryption key management
+- Rate limiting policies per endpoint
