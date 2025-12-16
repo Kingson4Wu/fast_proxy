@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkwebsite=globalThis.webpackChunkwebsite||[]).push([[903],{1912:s=>{s.exports=JSON.parse('{"blogBasePath":"/fast_proxy/zh/blog","blogTitle":"Blog","authorsListPath":"/fast_proxy/zh/blog/authors"}')}}]);
