@@ -125,6 +125,15 @@ const config: Config = {
     },
   ],
 
+  // Cloudflare Web Analytics
+  scripts: [
+    {
+      src: 'https://static.cloudflareinsights.com/beacon.min.js',
+      defer: true,
+      'data-cf-beacon': '{"token": "40cb59600d874d4ebe8da6d9367b4394"}',
+    },
+  ],
+
   // Set the production url of your site here
   url: 'https://kingson4wu.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
